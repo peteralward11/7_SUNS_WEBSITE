@@ -1,0 +1,127 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { Resend } from "resend";
+import BookingConfirmation from "@/emails/BookingConfirmation";
+import BookingNotification from "@/emails/BookingNotification";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!
+);
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const FROM = "bookings@7suns.ca";
+const TEAM_EMAIL = "info@7Suns.ca";
+const HCP_BASE = "https://api.housecallpro.com";
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const {
+      full_name, email, phone,
+      address, appliances, installation, removal, elevator, project_type,
+      preferred_date, alternate_date, notes,
+    } = body;
+
+    /* ── 1. Validate required fields ── */
+    if (!full_name || !email || !phone || !address || !appliances?.length || !preferred_date) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const data = {
+      full_name, email, phone,
+      address,
+      appliances,
+      installation: Boolean(installation),
+      removal: Boolean(removal),
+      elevator: Boolean(elevator),
+      project_type: project_type ?? "residential",
+      preferred_date,
+      alternate_date: alternate_date || null,
+      notes: notes || null,
+    };
+
+    /* ── 2. Save to Supabase ── */
+    const { error: dbError } = await supabase.from("bookings").insert(data);
+    if (dbError) {
+      console.error("[book] Supabase insert error:", dbError);
+      return NextResponse.json({ error: "Database error" }, { status: 500 });
+    }
+
+    /* ── 3. Send customer confirmation email ── */
+    await resend.emails.send({
+      from: FROM,
+      to: email,
+      subject: "Booking Request Received — 7 Suns Delivery & Logistics",
+      react: BookingConfirmation(data),
+    });
+
+    /* ── 4. Send internal notification email ── */
+    await resend.emails.send({
+      from: FROM,
+      to: TEAM_EMAIL,
+      replyTo: email,
+      subject: `New Booking: ${full_name} — ${preferred_date}`,
+      react: BookingNotification({ ...data, created_at: new Date().toISOString() }),
+    });
+
+    /* ── 5. HousecallPro integration ── */
+    try {
+      const hcpHeaders = {
+        Authorization: `Token ${process.env.HOUSECALL_PRO_API_KEY}`,
+        "Content-Type": "application/json",
+      };
+
+      const nameParts = full_name.trim().split(" ");
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(" ") || "-";
+
+      /* Create customer */
+      const customerRes = await fetch(`${HCP_BASE}/customers`, {
+        method: "POST",
+        headers: hcpHeaders,
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          mobile_number: phone,
+        }),
+      });
+      const customer = await customerRes.json();
+
+      /* Create job */
+      const appliancesList = Array.isArray(appliances) ? appliances.join(", ") : appliances;
+      const description = [
+        `Appliances: ${appliancesList}`,
+        `Installation: ${installation ? "Yes" : "No"}`,
+        `Old Unit Removal: ${removal ? "Yes" : "No"}`,
+        `Elevator Required: ${elevator ? "Yes" : "No"}`,
+        `Project Type: ${project_type === "builder" ? "Builder/Commercial" : "Residential"}`,
+        `Preferred Date: ${preferred_date}`,
+        alternate_date ? `Alternate Date: ${alternate_date}` : null,
+        notes ? `Notes: ${notes}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      await fetch(`${HCP_BASE}/jobs`, {
+        method: "POST",
+        headers: hcpHeaders,
+        body: JSON.stringify({
+          customer_id: customer.id,
+          address: { street: address },
+          description,
+          lead_source: "Website",
+        }),
+      });
+    } catch (hcpErr) {
+      /* HCP failure is non-fatal — booking is already in Supabase */
+      console.error("[book] HousecallPro error:", hcpErr);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("[book] Unexpected error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
