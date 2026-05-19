@@ -29,13 +29,16 @@ export default function Nav() {
   // Close drawer on route change
   useEffect(() => { setOpen(false); }, [pathname]);
 
+  // Fisher & Paykel is a standalone landing page — no header at all
+  if (pathname === "/fisher-paykel") return null;
+
   return (
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-[background,border-color,backdrop-filter] duration-300 ${
           scrolled
             ? "bg-navy/95 backdrop-blur-md border-b border-white/[0.06]"
-            : "bg-transparent"
+            : "bg-white/75 backdrop-blur-md border-b border-black/[0.06]"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-8"
@@ -70,7 +73,9 @@ export default function Nav() {
                     active:scale-95
                     ${active
                       ? "text-green"
-                      : "text-muted hover:text-white hover:bg-white/[0.06]"
+                      : scrolled
+                        ? "text-muted hover:text-white hover:bg-white/[0.06]"
+                        : "text-navy hover:text-navy-border hover:bg-black/[0.04]"
                     }`}
                 >
                   {label}
@@ -100,9 +105,9 @@ export default function Nav() {
               hover:bg-white/[0.06] transition-colors duration-200
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green"
           >
-            <span className={`block h-0.5 w-5 bg-white rounded-full transition-[transform,opacity] duration-300 ${open ? "rotate-45 translate-y-2" : ""}`} />
-            <span className={`block h-0.5 w-5 bg-white rounded-full transition-opacity duration-300 ${open ? "opacity-0" : ""}`} />
-            <span className={`block h-0.5 w-5 bg-white rounded-full transition-[transform,opacity] duration-300 ${open ? "-rotate-45 -translate-y-2" : ""}`} />
+            <span className={`block h-0.5 w-5 rounded-full transition-[transform,opacity,background-color] duration-300 ${scrolled ? "bg-white" : "bg-navy"} ${open ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`block h-0.5 w-5 rounded-full transition-[opacity,background-color] duration-300 ${scrolled ? "bg-white" : "bg-navy"} ${open ? "opacity-0" : ""}`} />
+            <span className={`block h-0.5 w-5 rounded-full transition-[transform,opacity,background-color] duration-300 ${scrolled ? "bg-white" : "bg-navy"} ${open ? "-rotate-45 -translate-y-2" : ""}`} />
           </button>
         </div>
       </header>

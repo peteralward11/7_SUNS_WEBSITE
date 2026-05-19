@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useBooking } from "@/lib/BookingContext";
+import HeroImage from "@/components/HeroImage";
 
 function useScrollReveal() {
   useEffect(() => {
@@ -124,21 +125,15 @@ export default function ServicesPage() {
         className="relative overflow-hidden"
         style={{ backgroundColor: "#F4F5F9", paddingTop: "88px" }}
       >
-        {/* Subtle grid texture */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(12,20,32,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(12,20,32,0.04) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
+        <HeroImage src="/hero-services.png" />
 
-        <div className="relative max-w-7xl mx-auto px-6 py-24 lg:py-32">
+
+
+        <div className="relative max-w-7xl mx-auto px-6 py-12 lg:py-24">
           <div className="max-w-3xl" data-reveal>
             <p
               className="text-xs font-semibold uppercase mb-6 flex items-center gap-3"
-              style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}
+              style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)", textShadow: "0 1px 8px rgba(27,58,92,0.18)" }}
             >
               <span style={{ display: "inline-block", width: "24px", height: "1px", backgroundColor: "#6BBF44" }} />
               What We Do
@@ -146,7 +141,7 @@ export default function ServicesPage() {
             <h1
               style={{
                 fontFamily: "var(--font-outfit)",
-                fontSize: "clamp(2.8rem, 6vw, 5rem)",
+                fontSize: "clamp(1.9rem, 8vw, 5rem)",
                 fontWeight: 700,
                 lineHeight: 1.0,
                 letterSpacing: "-0.04em",
@@ -154,8 +149,8 @@ export default function ServicesPage() {
                 marginBottom: "24px",
               }}
             >
-              Delivered and installed,<br />
-              <span style={{ color: "#6BBF44" }}>done right.</span>
+              Delivered and Installed,<br />
+              <span style={{ color: "#6BBF44", textShadow: "0 1px 8px rgba(27,58,92,0.18)" }}>Done Right.</span>
             </h1>
             <p
               style={{
@@ -206,10 +201,10 @@ export default function ServicesPage() {
       </section>
 
       {/* ══ SERVICE DETAIL TILES ══════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#FFFFFF" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-6">
 
-          <div className="mb-16" data-reveal>
+          <div className="mb-8 md:mb-16" data-reveal>
             <p
               className="text-xs font-semibold uppercase mb-4 flex items-center gap-3"
               style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}
@@ -227,7 +222,7 @@ export default function ServicesPage() {
                 color: "#1B3A5C",
               }}
             >
-              Everything you need,<br />nothing you don&apos;t.
+              Everything You Need,<br />Nothing You Don&apos;t.
             </h2>
           </div>
 
@@ -235,7 +230,7 @@ export default function ServicesPage() {
             {services.map(({ num, title, cta, description, includes, appliances }, idx) => (
               <div
                 key={num}
-                className="relative flex flex-col p-8 rounded-2xl overflow-hidden"
+                className="relative flex flex-col p-5 sm:p-8 rounded-2xl overflow-hidden"
                 style={{
                   backgroundColor: "#F8F9FB",
                   border: "1px solid rgba(12,20,32,0.07)",
@@ -386,7 +381,7 @@ export default function ServicesPage() {
 
                 {/* CTA strip */}
                 <div
-                  className="mt-6 -mx-8 -mb-8 px-8 py-5 flex items-center justify-between gap-4"
+                  className="mt-5 sm:mt-6 -mx-5 sm:-mx-8 -mb-5 sm:-mb-8 px-5 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"
                   style={{
                     backgroundColor: "rgba(107,191,68,0.07)",
                     borderTop: "1px solid rgba(107,191,68,0.18)",
@@ -427,7 +422,7 @@ export default function ServicesPage() {
 
       {/* ══ STATS ═════════════════════════════════════════ */}
       <section
-        className="py-20"
+        className="py-12 md:py-20"
         style={{
           backgroundColor: "#F4F5F9",
           borderTop: "1px solid rgba(12,20,32,0.06)",
@@ -438,12 +433,12 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { target: 15, suffix: "+", label: "Years In Business", sub: "Founded 2009" },
-              { target: 5000, suffix: "+", label: "Deliveries Completed", sub: "Across Ontario" },
-              { target: 10, suffix: "+", label: "Builder Partners", sub: "Trusted By The Best" },
+              { target: 100, suffix: "K+", label: "Deliveries Completed", sub: "Across Ontario" },
+              { target: 25, suffix: "+", label: "Builder Partners", sub: "Trusted By The Best" },
             ].map(({ target, suffix, label, sub }, i) => (
               <div
                 key={label}
-                className="flex flex-col items-center text-center p-10 rounded-2xl"
+                className="flex flex-col items-center text-center p-6 md:p-10 rounded-2xl"
                 style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(12,20,32,0.06)" }}
                 data-reveal
                 data-delay={String(i + 1)}
@@ -491,9 +486,9 @@ export default function ServicesPage() {
       </section>
 
       {/* ══ HOW IT WORKS ══════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#FFFFFF" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14 text-center" data-reveal>
+          <div className="mb-8 md:mb-14 text-center" data-reveal>
             <p
               className="text-xs font-semibold uppercase mb-4"
               style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}
@@ -510,7 +505,7 @@ export default function ServicesPage() {
                 color: "#1B3A5C",
               }}
             >
-              Simple From Start To Finish
+              Simple From Start to Finish
             </h2>
           </div>
 
@@ -534,7 +529,7 @@ export default function ServicesPage() {
             ].map(({ num, title, desc }, idx) => (
               <div
                 key={num}
-                className="relative flex flex-col p-8 rounded-2xl"
+                className="relative flex flex-col p-5 md:p-8 rounded-2xl"
                 style={{
                   backgroundColor: "#F8F9FB",
                   border: "1px solid rgba(12,20,32,0.07)",
@@ -594,7 +589,7 @@ export default function ServicesPage() {
       </section>
 
       {/* ══ CTA ═══════════════════════════════════════════ */}
-      <section className="py-24 relative overflow-hidden" style={{ backgroundColor: "#F4F5F9" }}>
+      <section className="py-16 md:py-24 relative overflow-hidden" style={{ backgroundColor: "#F4F5F9" }}>
         <div
           className="absolute pointer-events-none inset-0"
           style={{
@@ -621,7 +616,7 @@ export default function ServicesPage() {
             data-reveal="scale"
             data-delay="1"
           >
-            Ready to book<br />your delivery?
+            Ready to Book<br />Your Delivery?
           </h2>
           <p
             style={{

@@ -7,15 +7,19 @@ interface Props {
   full_name: string;
   email: string;
   phone: string;
+  project_type: string;
+  company_name?: string | null;
+  appliance_count?: number | null;
   address: string;
+  unit_count?: number | null;
   appliances: string[];
   installation: boolean;
   removal: boolean;
   elevator: boolean;
-  project_type: string;
+  stair_carry?: boolean;
   preferred_date: string;
-  alternate_date?: string;
-  notes?: string;
+  access_notes?: string | null;
+  notes?: string | null;
   created_at?: string;
 }
 
@@ -23,18 +27,23 @@ export default function BookingNotification({
   full_name = "Jane Smith",
   email = "jane@example.com",
   phone = "(416) 555-0100",
+  project_type = "residential",
+  company_name,
+  appliance_count,
   address = "123 Main St, Toronto, ON",
-  appliances = ["Fridge / Refrigerator", "Dishwasher"],
+  unit_count,
+  appliances = ["Refrigerator", "Dishwasher"],
   installation = true,
   removal = false,
   elevator = false,
-  project_type = "residential",
+  stair_carry = false,
   preferred_date = "2026-06-01",
-  alternate_date,
+  access_notes,
   notes,
   created_at,
 }: Props) {
   const timestamp = created_at ?? new Date().toISOString();
+  const isBuilder = project_type === "builder";
 
   return (
     <Html>
@@ -47,7 +56,7 @@ export default function BookingNotification({
           <Section style={header}>
             <Text style={badge}>NEW BOOKING REQUEST</Text>
             <Heading style={h1}>{full_name}</Heading>
-            <Text style={subtitle}>{project_type === "builder" ? "Builder / Commercial" : "Residential"} · {preferred_date}</Text>
+            <Text style={subtitle}>{isBuilder ? "Builder / Commercial" : "Residential"} · {preferred_date}</Text>
           </Section>
 
           {/* Contact */}
@@ -56,18 +65,22 @@ export default function BookingNotification({
             <DataRow label="Name" value={full_name} />
             <DataRow label="Email" value={email} />
             <DataRow label="Phone" value={phone} />
+            {isBuilder && company_name && <DataRow label="Company" value={company_name} />}
           </Section>
           <Hr style={divider} />
 
-          {/* Job */}
+          {/* Job details */}
           <Section style={section}>
             <Text style={sectionLabel}>Job Details</Text>
             <DataRow label="Address" value={address} />
+            {isBuilder && unit_count != null && <DataRow label="Number of Units" value={String(unit_count)} />}
+            {!isBuilder && appliance_count != null && <DataRow label="# of Appliances" value={String(appliance_count)} />}
             <DataRow label="Appliances" value={appliances.join(", ")} />
             <DataRow label="Installation" value={installation ? "Yes" : "No"} />
             <DataRow label="Old Unit Removal" value={removal ? "Yes" : "No"} />
             <DataRow label="Elevator Required" value={elevator ? "Yes" : "No"} />
-            <DataRow label="Project Type" value={project_type === "builder" ? "Builder / Commercial" : "Residential"} />
+            <DataRow label="Stair Carry" value={stair_carry ? "Yes" : "No"} />
+            <DataRow label="Project Type" value={isBuilder ? "Builder / Commercial" : "Residential"} />
           </Section>
           <Hr style={divider} />
 
@@ -75,13 +88,15 @@ export default function BookingNotification({
           <Section style={section}>
             <Text style={sectionLabel}>Schedule</Text>
             <DataRow label="Preferred Date" value={preferred_date} />
-            {alternate_date && <DataRow label="Alternate Date" value={alternate_date} />}
+            {access_notes && <DataRow label="Access Notes" value={access_notes} />}
             {notes && <DataRow label="Notes" value={notes} />}
           </Section>
 
           {/* Footer */}
           <Section style={footer}>
-            <Text style={footerText}>Submitted {new Date(timestamp).toLocaleString("en-CA", { timeZone: "America/Toronto" })} EST · 7 Suns Delivery & Logistics</Text>
+            <Text style={footerText}>
+              Submitted {new Date(timestamp).toLocaleString("en-CA", { timeZone: "America/Toronto" })} EST · 7 Suns Delivery &amp; Logistics
+            </Text>
           </Section>
 
         </Container>

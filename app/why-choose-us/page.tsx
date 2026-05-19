@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useBooking } from "@/lib/BookingContext";
+import HeroImage from "@/components/HeroImage";
 
 /* ─── Scroll reveal ──────────────────────────────────── */
 function useScrollReveal() {
@@ -150,19 +151,14 @@ export default function WhyChooseUsPage() {
         className="relative overflow-hidden"
         style={{ backgroundColor: "#F4F5F9", paddingTop: "88px" }}
       >
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(12,20,32,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(12,20,32,0.04) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
-        <div className="relative max-w-7xl mx-auto px-6 py-24 lg:py-32">
+        <HeroImage src="/hero-why-choose-us.png" />
+
+
+        <div className="relative max-w-7xl mx-auto px-6 py-12 lg:py-24">
           <div className="max-w-3xl" data-reveal>
             <p
               className="text-xs font-semibold uppercase mb-6 flex items-center gap-3"
-              style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}
+              style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)", textShadow: "0 1px 8px rgba(27,58,92,0.18)" }}
             >
               <span style={{ display: "inline-block", width: "24px", height: "1px", backgroundColor: "#6BBF44" }} />
               Our Difference
@@ -170,7 +166,7 @@ export default function WhyChooseUsPage() {
             <h1
               style={{
                 fontFamily: "var(--font-outfit)",
-                fontSize: "clamp(2.8rem, 6vw, 5rem)",
+                fontSize: "clamp(1.9rem, 8vw, 5rem)",
                 fontWeight: 700,
                 lineHeight: 1.0,
                 letterSpacing: "-0.04em",
@@ -178,9 +174,7 @@ export default function WhyChooseUsPage() {
                 marginBottom: "24px",
               }}
             >
-              Why Ontario&apos;s best<br />
-              builders choose{" "}
-              <span style={{ color: "#6BBF44" }}>7 Suns.</span>
+              We Show Up.
             </h1>
             <p
               style={{
@@ -201,10 +195,10 @@ export default function WhyChooseUsPage() {
       {/* ══════════════════════════════════════════════
           DIFFERENTIATORS — expanded editorial cards
       ══════════════════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#FFFFFF" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-6">
 
-          <div className="mb-16" data-reveal>
+          <div className="mb-8 md:mb-16" data-reveal>
             <p
               className="text-xs font-semibold uppercase mb-4 flex items-center gap-3"
               style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}
@@ -222,7 +216,7 @@ export default function WhyChooseUsPage() {
                 color: "#1B3A5C",
               }}
             >
-              Six reasons. All backed<br />by fifteen years of proof.
+              Proof Over Promises.
             </h2>
           </div>
 
@@ -230,7 +224,7 @@ export default function WhyChooseUsPage() {
             {differentiators.map(({ num, title, summary, desc, proof }, idx) => (
               <div
                 key={num}
-                className="relative flex flex-col p-8 rounded-2xl overflow-hidden"
+                className="relative flex flex-col p-5 sm:p-8 rounded-2xl overflow-hidden"
                 style={{
                   backgroundColor: "#F8F9FB",
                   border: "1px solid rgba(12,20,32,0.07)",
@@ -351,7 +345,7 @@ export default function WhyChooseUsPage() {
           STATS
       ══════════════════════════════════════════════ */}
       <section
-        className="py-20"
+        className="py-12 md:py-20"
         style={{
           backgroundColor: "#F4F5F9",
           borderTop: "1px solid rgba(12,20,32,0.06)",
@@ -362,12 +356,12 @@ export default function WhyChooseUsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { target: 15, suffix: "+", label: "Years In Business", sub: "Founded 2009" },
-              { target: 5000, suffix: "+", label: "Deliveries Completed", sub: "Across Ontario" },
-              { target: 10, suffix: "+", label: "Builder Partners", sub: "Trusted By The Best" },
+              { target: 100, suffix: "K+", label: "Deliveries Completed", sub: "Across Ontario" },
+              { target: 25, suffix: "+", label: "Builder Partners", sub: "Trusted By The Best" },
             ].map(({ target, suffix, label, sub }, i) => (
               <div
                 key={label}
-                className="flex flex-col items-center text-center p-10 rounded-2xl"
+                className="flex flex-col items-center text-center p-6 md:p-10 rounded-2xl"
                 style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(12,20,32,0.06)" }}
                 data-reveal
                 data-delay={String(i + 1)}
@@ -400,9 +394,9 @@ export default function WhyChooseUsPage() {
       {/* ══════════════════════════════════════════════
           TESTIMONIALS
       ══════════════════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#FFFFFF" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14" data-reveal>
+          <div className="mb-8 md:mb-14" data-reveal>
             <p
               className="text-xs font-semibold uppercase mb-4 flex items-center gap-3"
               style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}
@@ -420,7 +414,7 @@ export default function WhyChooseUsPage() {
                 color: "#1B3A5C",
               }}
             >
-              Don&apos;t take our word for it.
+              Don&apos;t Take Our Word for It.
             </h2>
           </div>
 
@@ -428,7 +422,7 @@ export default function WhyChooseUsPage() {
             {testimonials.map(({ quote, name, location, rating }, idx) => (
               <div
                 key={name}
-                className="flex flex-col justify-between p-8 rounded-2xl"
+                className="flex flex-col justify-between p-5 sm:p-8 rounded-2xl"
                 style={{
                   backgroundColor: "#F8F9FB",
                   border: "1px solid rgba(12,20,32,0.07)",
@@ -473,7 +467,7 @@ export default function WhyChooseUsPage() {
       {/* ══════════════════════════════════════════════
           TRUSTED BUILDERS MARQUEE
       ══════════════════════════════════════════════ */}
-      <section className="py-14 overflow-hidden" style={{ backgroundColor: "#ECEEF4" }}>
+      <section className="py-10 md:py-14 overflow-hidden" style={{ backgroundColor: "#ECEEF4" }}>
         <p
           className="text-center text-xs font-semibold uppercase mb-8 tracking-widest"
           style={{ color: "#94A3B8", fontFamily: "var(--font-outfit)" }}
@@ -482,11 +476,11 @@ export default function WhyChooseUsPage() {
         </p>
         <div className="relative overflow-hidden">
           <div
-            className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+            className="absolute left-0 top-0 bottom-0 w-10 sm:w-24 z-10 pointer-events-none"
             style={{ background: "linear-gradient(to right, #ECEEF4, transparent)" }}
           />
           <div
-            className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+            className="absolute right-0 top-0 bottom-0 w-10 sm:w-24 z-10 pointer-events-none"
             style={{ background: "linear-gradient(to left, #ECEEF4, transparent)" }}
           />
           <div className="marquee-track">
@@ -516,7 +510,7 @@ export default function WhyChooseUsPage() {
       {/* ══════════════════════════════════════════════
           CTA
       ══════════════════════════════════════════════ */}
-      <section className="py-28 relative overflow-hidden" style={{ backgroundColor: "#F4F5F9" }}>
+      <section className="py-16 md:py-28 relative overflow-hidden" style={{ backgroundColor: "#F4F5F9" }}>
         <div
           className="absolute pointer-events-none inset-0"
           style={{ background: "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(107,191,68,0.06) 0%, transparent 70%)" }}
@@ -540,7 +534,7 @@ export default function WhyChooseUsPage() {
             data-reveal="scale"
             data-delay="1"
           >
-            Ready to work with<br />a team you can trust?
+            Ready to Work with<br />a Team You Can Trust?
           </h2>
           <p
             style={{

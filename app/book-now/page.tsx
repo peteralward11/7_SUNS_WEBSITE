@@ -286,16 +286,16 @@ export default function BookNowPage() {
       {/* ══ HERO ══════════════════════════════════════════ */}
       <section className="relative overflow-hidden" style={{ backgroundColor: "#F4F5F9", paddingTop: "88px" }}>
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(12,20,32,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(12,20,32,0.04) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
-        <div className="relative max-w-7xl mx-auto px-6 py-20 lg:py-24">
+        <div className="relative max-w-7xl mx-auto px-6 py-12 lg:py-20">
           <div className="max-w-2xl" data-reveal>
             <p className="text-xs font-semibold uppercase mb-6 flex items-center gap-3" style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}>
               <span style={{ display: "inline-block", width: "24px", height: "1px", backgroundColor: "#6BBF44" }} />
               Book a Delivery
             </p>
-            <h1 style={{ fontFamily: "var(--font-outfit)", fontSize: "clamp(2.8rem, 6vw, 5rem)", fontWeight: 700, lineHeight: 1.0, letterSpacing: "-0.04em", color: "#1B3A5C", marginBottom: "20px" }}>
-              Let&apos;s get your<br />
-              delivery{" "}
-              <span style={{ color: "#6BBF44" }}>scheduled.</span>
+            <h1 style={{ fontFamily: "var(--font-outfit)", fontSize: "clamp(1.9rem, 8vw, 5rem)", fontWeight: 700, lineHeight: 1.0, letterSpacing: "-0.04em", color: "#1B3A5C", marginBottom: "20px" }}>
+              Let&apos;s Get Your<br />
+              Delivery{" "}
+              <span style={{ color: "#6BBF44" }}>Scheduled.</span>
             </h1>
             <p style={{ fontFamily: "var(--font-outfit)", fontSize: "17px", fontWeight: 300, color: "#4A5568", lineHeight: 1.7, maxWidth: "460px" }}>
               Fill out the form below and our team will confirm your delivery window within one business day. Takes under two minutes.
@@ -361,7 +361,7 @@ export default function BookNowPage() {
 
                   <div className="mb-6">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <input id="phone" type="tel" value={data.phone} onChange={e => set("phone", e.target.value)} placeholder="(416) 555-0100" style={{ ...fieldBase, ...fs("phone"), maxWidth: "280px" }} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} />
+                    <input id="phone" type="tel" value={data.phone} onChange={e => set("phone", e.target.value)} placeholder="(416) 555-0100" style={{ ...fieldBase, ...fs("phone") }} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} />
                     {errors.phone && <span style={errStyle}>{errors.phone}</span>}
                   </div>
 
@@ -415,7 +415,7 @@ export default function BookNowPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
                     <button type="button" onClick={prevStep} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl font-medium text-sm" style={{ border: "1px solid rgba(12,20,32,0.14)", color: "#64748B", fontFamily: "var(--font-outfit)", backgroundColor: "#FFFFFF", cursor: "pointer", transition: "border-color 0.2s" }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#6BBF44"; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(12,20,32,0.14)"; }}>
                       <ArrowLeft /> Back
                     </button>
@@ -470,7 +470,7 @@ export default function BookNowPage() {
                     </p>
                   )}
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
                     <button type="button" onClick={prevStep} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl font-medium text-sm" style={{ border: "1px solid rgba(12,20,32,0.14)", color: "#64748B", fontFamily: "var(--font-outfit)", backgroundColor: "#FFFFFF", cursor: "pointer", transition: "border-color 0.2s" }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#6BBF44"; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(12,20,32,0.14)"; }}>
                       <ArrowLeft /> Back
                     </button>

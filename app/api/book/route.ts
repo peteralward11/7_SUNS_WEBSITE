@@ -4,40 +4,62 @@ import { Resend } from "resend";
 import BookingConfirmation from "@/emails/BookingConfirmation";
 import BookingNotification from "@/emails/BookingNotification";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const FROM = "bookings@7suns.ca";
 const TEAM_EMAIL = "info@7Suns.ca";
 const HCP_BASE = "https://api.housecallpro.com";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!
+  );
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     const body = await req.json();
     const {
       full_name, email, phone,
-      address, appliances, installation, removal, elevator, project_type,
-      preferred_date, alternate_date, notes,
+      project_type,
+      company_name,
+      appliance_count,
+      address,
+      unit_count,
+      appliances,
+      installation,
+      removal,
+      elevator,
+      stair_carry,
+      preferred_date,
+      access_notes,
+      notes,
     } = body;
 
     /* ── 1. Validate required fields ── */
+    const isBuilder = project_type === "builder";
     if (!full_name || !email || !phone || !address || !appliances?.length || !preferred_date) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+    if (isBuilder && !company_name) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const data = {
-      full_name, email, phone,
+      full_name,
+      email,
+      phone,
+      project_type: project_type ?? "residential",
+      company_name: company_name || null,
+      appliance_count: appliance_count ?? null,
       address,
+      unit_count: unit_count ?? null,
       appliances,
       installation: Boolean(installation),
       removal: Boolean(removal),
       elevator: Boolean(elevator),
-      project_type: project_type ?? "residential",
+      stair_carry: Boolean(stair_carry),
       preferred_date,
-      alternate_date: alternate_date || null,
+      access_notes: access_notes || null,
       notes: notes || null,
     };
 
@@ -76,7 +98,6 @@ export async function POST(req: NextRequest) {
       const firstName = nameParts[0];
       const lastName = nameParts.slice(1).join(" ") || "-";
 
-      /* Create customer */
       const customerRes = await fetch(`${HCP_BASE}/customers`, {
         method: "POST",
         headers: hcpHeaders,
@@ -89,16 +110,19 @@ export async function POST(req: NextRequest) {
       });
       const customer = await customerRes.json();
 
-      /* Create job */
       const appliancesList = Array.isArray(appliances) ? appliances.join(", ") : appliances;
       const description = [
         `Appliances: ${appliancesList}`,
+        appliance_count ? `Number of Appliances: ${appliance_count}` : null,
+        unit_count ? `Number of Units: ${unit_count}` : null,
         `Installation: ${installation ? "Yes" : "No"}`,
         `Old Unit Removal: ${removal ? "Yes" : "No"}`,
         `Elevator Required: ${elevator ? "Yes" : "No"}`,
-        `Project Type: ${project_type === "builder" ? "Builder/Commercial" : "Residential"}`,
+        `Stair Carry: ${stair_carry ? "Yes" : "No"}`,
+        `Project Type: ${isBuilder ? "Builder/Commercial" : "Residential"}`,
+        isBuilder && company_name ? `Company: ${company_name}` : null,
         `Preferred Date: ${preferred_date}`,
-        alternate_date ? `Alternate Date: ${alternate_date}` : null,
+        access_notes ? `Access Notes: ${access_notes}` : null,
         notes ? `Notes: ${notes}` : null,
       ]
         .filter(Boolean)
@@ -115,7 +139,6 @@ export async function POST(req: NextRequest) {
         }),
       });
     } catch (hcpErr) {
-      /* HCP failure is non-fatal — booking is already in Supabase */
       console.error("[book] HousecallPro error:", hcpErr);
     }
 

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useBooking } from "@/lib/BookingContext";
+import HeroImage from "@/components/HeroImage";
 
 /* ─── Scroll reveal ──────────────────────────────────── */
 function useScrollReveal() {
@@ -136,19 +137,12 @@ export default function ContactPage() {
         className="relative overflow-hidden"
         style={{ backgroundColor: "#F4F5F9", paddingTop: "88px" }}
       >
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(12,20,32,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(12,20,32,0.04) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
-        <div className="relative max-w-7xl mx-auto px-6 py-20 lg:py-28">
+        <HeroImage src="/hero-contact.png" />
+        <div className="relative max-w-7xl mx-auto px-6 py-12 lg:py-24">
           <div className="max-w-2xl" data-reveal>
             <p
               className="text-xs font-semibold uppercase mb-6 flex items-center gap-3"
-              style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}
+              style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)", textShadow: "0 1px 8px rgba(27,58,92,0.18)" }}
             >
               <span style={{ display: "inline-block", width: "24px", height: "1px", backgroundColor: "#6BBF44" }} />
               Get In Touch
@@ -156,7 +150,7 @@ export default function ContactPage() {
             <h1
               style={{
                 fontFamily: "var(--font-outfit)",
-                fontSize: "clamp(2.8rem, 6vw, 5rem)",
+                fontSize: "clamp(1.9rem, 8vw, 5rem)",
                 fontWeight: 700,
                 lineHeight: 1.0,
                 letterSpacing: "-0.04em",
@@ -164,9 +158,9 @@ export default function ContactPage() {
                 marginBottom: "20px",
               }}
             >
-              We&apos;d love to<br />
-              hear from{" "}
-              <span style={{ color: "#6BBF44" }}>you.</span>
+              We&apos;d Love to<br />
+              Hear from{" "}
+              <span style={{ color: "#6BBF44" }}>You.</span>
             </h1>
             <p
               style={{
@@ -187,7 +181,7 @@ export default function ContactPage() {
       {/* ══════════════════════════════════════════════
           FORM + SIDEBAR
       ══════════════════════════════════════════════ */}
-      <section className="py-20" style={{ backgroundColor: "#FFFFFF" }}>
+      <section className="py-12 md:py-20" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 items-start">
 

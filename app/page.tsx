@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useBooking } from "@/lib/BookingContext";
+import HeroImage from "@/components/HeroImage";
 
 /* ─── Scroll reveal hook ─────────────────────────────── */
 function useScrollReveal() {
@@ -56,309 +57,6 @@ const ArrowRight = () => (
     <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
   </svg>
 );
-
-/* ─── Map Background ─────────────────────────────────── */
-function MapBackground() {
-  return (
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox="0 0 1440 900"
-      preserveAspectRatio="xMidYMid slice"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <defs>
-        {/* Dense urban blocks */}
-        <pattern id="blocks-dense" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
-          <rect width="48" height="48" fill="#E9EBF1"/>
-          <rect x="5" y="5" width="38" height="38" fill="#F6F7FA"/>
-        </pattern>
-        {/* Suburban blocks — larger */}
-        <pattern id="blocks-sub" x="0" y="0" width="80" height="60" patternUnits="userSpaceOnUse">
-          <rect width="80" height="60" fill="#ECEEF4"/>
-          <rect x="7" y="7" width="66" height="46" fill="#F4F5F9"/>
-        </pattern>
-        {/* Fine street grid */}
-        <pattern id="fine-street" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-          <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#E0E3EC" strokeWidth="0.35"/>
-        </pattern>
-      </defs>
-
-      {/* ── Base ── */}
-      <rect width="1440" height="900" fill="#F3F4F8"/>
-      <rect width="1440" height="900" fill="url(#blocks-sub)"/>
-      {/* Denser urban core (south-central — GTA) */}
-      <rect x="540" y="380" width="480" height="380" fill="url(#blocks-dense)"/>
-      {/* Fine street overlay everywhere */}
-      <rect width="1440" height="900" fill="url(#fine-street)" opacity="0.5"/>
-
-      {/* ── Water bodies ── */}
-      {/* Lake Ontario — bottom band */}
-      <path d="M 0 840 Q 360 820 720 835 Q 1000 845 1440 825 L 1440 900 L 0 900 Z"
-            fill="#DCE8F4" opacity="0.75"/>
-      {/* Georgian Bay — upper right */}
-      <ellipse cx="1180" cy="110" rx="220" ry="95" fill="#DCE8F4" opacity="0.6"/>
-      {/* Lake Simcoe */}
-      <ellipse cx="760" cy="290" rx="55" ry="38" fill="#DCE8F4" opacity="0.55"/>
-
-      {/* ── Parks / green areas ── */}
-      <rect x="310" y="450" width="75" height="55" fill="#D8EFC9" rx="4" opacity="0.7"/>
-      <rect x="880" y="560" width="90" height="65" fill="#D8EFC9" rx="4" opacity="0.65"/>
-      <rect x="1060" y="220" width="70" height="50" fill="#D8EFC9" rx="4" opacity="0.6"/>
-      <rect x="180" y="300" width="60" height="45" fill="#D8EFC9" rx="4" opacity="0.6"/>
-      <rect x="620" y="160" width="80" height="55" fill="#D8EFC9" rx="4" opacity="0.55"/>
-      <rect x="1250" y="440" width="85" height="60" fill="#D8EFC9" rx="4" opacity="0.55"/>
-      <rect x="440" y="700" width="65" height="45" fill="#D8EFC9" rx="4" opacity="0.5"/>
-
-      {/* ══ HIGHWAYS ══ */}
-      {/* Hwy 401 — main E-W spine */}
-      <path d="M 0 580 Q 400 572 700 568 Q 900 565 1200 558 Q 1350 555 1440 552"
-            stroke="#B8BDCE" strokeWidth="8" fill="none"/>
-      {/* Hwy 400 — N-S Barrie corridor */}
-      <rect x="690" y="0" width="7" height="580" fill="#B8BDCE"/>
-      {/* QEW — curves SW from GTA */}
-      <path d="M 700 578 Q 640 600 560 630 Q 460 665 360 700 Q 260 735 160 768 Q 80 792 0 810"
-            stroke="#BBBFCE" strokeWidth="6" fill="none"/>
-      {/* Hwy 427 / 27 N-S west GTA */}
-      <rect x="580" y="380" width="5" height="200" fill="#C2C6D6"/>
-      {/* Hwy 404 — east GTA N-S */}
-      <rect x="790" y="0" width="5" height="580" fill="#C2C6D6"/>
-      {/* Hwy 115/35 to Kingston */}
-      <path d="M 790 400 Q 900 420 1000 440 Q 1080 458 1150 470 Q 1250 488 1350 500 Q 1400 506 1440 510"
-            stroke="#C2C6D6" strokeWidth="5" fill="none"/>
-      {/* Hwy 11 — N to Barrie/Sudbury */}
-      <path d="M 690 0 Q 680 100 672 200 Q 665 280 660 350"
-            stroke="#C2C6D6" strokeWidth="4" fill="none"/>
-      {/* Hwy 17 — Ottawa to Sudbury */}
-      <path d="M 1300 200 Q 1150 230 1000 260 Q 900 280 820 300 Q 770 315 730 330"
-            stroke="#C4C8D8" strokeWidth="4" fill="none"/>
-      {/* Hwy 402 — London to Sarnia */}
-      <path d="M 390 568 Q 310 570 230 572 Q 160 574 80 575 Q 40 576 0 577"
-            stroke="#C4C8D8" strokeWidth="4" fill="none"/>
-
-      {/* ══ ARTERIALS ══ */}
-      <rect x="0" y="220" width="1440" height="3" fill="#CCCFD9"/>
-      <rect x="0" y="380" width="1440" height="2.5" fill="#D0D3DC"/>
-      <rect x="0" y="480" width="700" height="2.5" fill="#D0D3DC"/>
-      <rect x="0" y="680" width="1440" height="2" fill="#D4D7E0"/>
-      <rect x="0" y="760" width="1440" height="2" fill="#D8DBE4"/>
-      <rect x="130" y="0" width="3" height="900" fill="#D0D3DC"/>
-      <rect x="320" y="0" width="2.5" height="900" fill="#CCCFD9"/>
-      <rect x="480" y="0" width="2.5" height="900" fill="#D0D3DC"/>
-      <rect x="870" y="0" width="2.5" height="900" fill="#D0D3DC"/>
-      <rect x="1040" y="0" width="2" height="900" fill="#D4D7E0"/>
-      <rect x="1200" y="0" width="2" height="900" fill="#D4D7E0"/>
-      <rect x="1360" y="0" width="2" height="900" fill="#D8DBE4"/>
-
-      {/* ══ LOCAL STREETS ══ */}
-      {[120, 200, 270, 340, 430, 520, 620, 720, 820, 920, 970, 1010, 1100, 1150, 1280, 1320].map((x, i) => (
-        <rect key={`v${i}`} x={x} y={0} width="1" height="900" fill="#DDE0E8" opacity="0.7"/>
-      ))}
-      {[80, 140, 280, 360, 440, 520, 600, 640, 700, 740, 800, 860, 920].map((y, i) => (
-        <rect key={`h${i}`} x={0} y={y} width="1440" height="1" fill="#DDE0E8" opacity="0.7"/>
-      ))}
-
-      {/* ══ GREEN DELIVERY ROUTES ══ */}
-      {/* Main spine: Windsor → Toronto → Ottawa */}
-      <path d="M 100 576 Q 200 574 300 572 Q 390 570 480 568 Q 560 566 640 568 Q 690 570 720 572"
-            stroke="#6BBF44" strokeWidth="2.5" fill="none" opacity="0.55" strokeDasharray="10 6"/>
-      <path d="M 720 572 Q 850 555 980 530 Q 1080 510 1150 490 Q 1250 465 1340 440 Q 1390 428 1440 415"
-            stroke="#6BBF44" strokeWidth="2.5" fill="none" opacity="0.55" strokeDasharray="10 6"/>
-      {/* QEW branch to Niagara */}
-      <path d="M 720 572 Q 700 600 680 630 Q 660 660 680 720 Q 700 760 730 800"
-            stroke="#6BBF44" strokeWidth="2" fill="none" opacity="0.4" strokeDasharray="8 5"/>
-      {/* Hwy 400 branch to Barrie/Sudbury */}
-      <path d="M 695 568 Q 690 480 685 380 Q 682 300 678 200 Q 675 140 672 80"
-            stroke="#6BBF44" strokeWidth="2" fill="none" opacity="0.4" strokeDasharray="8 5"/>
-      {/* London → Kitchener → GTA */}
-      <path d="M 390 568 Q 460 562 530 563 Q 600 564 640 566"
-            stroke="#6BBF44" strokeWidth="1.8" fill="none" opacity="0.35" strokeDasharray="7 5"/>
-      {/* Ottawa north loop */}
-      <path d="M 1300 200 Q 1280 280 1260 360 Q 1240 420 1220 470"
-            stroke="#6BBF44" strokeWidth="1.8" fill="none" opacity="0.35" strokeDasharray="7 5"/>
-
-      {/* ══ CITY MARKERS ══ */}
-      {/* Toronto — main hub */}
-      <circle cx="724" cy="572" r="22" fill="#6BBF44" opacity="0.08"/>
-      <circle cx="724" cy="572" r="13" fill="#6BBF44" opacity="0.15"/>
-      <circle cx="724" cy="572" r="7" fill="#6BBF44" opacity="0.95"/>
-      <circle cx="724" cy="572" r="3.5" fill="white" opacity="0.9"/>
-      <text x="736" y="568" fontSize="9" fontWeight="700" fill="#4A6630" fontFamily="system-ui" letterSpacing="0.02em">Toronto</text>
-
-      {/* Ottawa */}
-      <circle cx="1340" cy="200" r="14" fill="#6BBF44" opacity="0.12"/>
-      <circle cx="1340" cy="200" r="8" fill="#6BBF44" opacity="0.18"/>
-      <circle cx="1340" cy="200" r="5" fill="#6BBF44" opacity="0.9"/>
-      <circle cx="1340" cy="200" r="2.5" fill="white" opacity="0.85"/>
-      <text x="1350" y="197" fontSize="8" fontWeight="600" fill="#4A6630" fontFamily="system-ui">Ottawa</text>
-
-      {/* Hamilton */}
-      <circle cx="682" cy="632" r="10" fill="#6BBF44" opacity="0.13"/>
-      <circle cx="682" cy="632" r="5.5" fill="#6BBF44" opacity="0.85"/>
-      <circle cx="682" cy="632" r="2.5" fill="white" opacity="0.8"/>
-      <text x="692" y="629" fontSize="7.5" fill="#4A6630" fontFamily="system-ui" fontWeight="500">Hamilton</text>
-
-      {/* Mississauga */}
-      <circle cx="660" cy="590" r="4.5" fill="#6BBF44" opacity="0.8"/>
-      <text x="668" y="587" fontSize="7" fill="#5A7040" fontFamily="system-ui">Mississauga</text>
-
-      {/* Brampton */}
-      <circle cx="625" cy="560" r="4" fill="#6BBF44" opacity="0.75"/>
-      <text x="632" y="557" fontSize="7" fill="#5A7040" fontFamily="system-ui">Brampton</text>
-
-      {/* Vaughan */}
-      <circle cx="700" cy="520" r="4" fill="#6BBF44" opacity="0.75"/>
-      <text x="708" y="517" fontSize="7" fill="#5A7040" fontFamily="system-ui">Vaughan</text>
-
-      {/* Markham */}
-      <circle cx="760" cy="540" r="4" fill="#6BBF44" opacity="0.75"/>
-      <text x="768" y="537" fontSize="7" fill="#5A7040" fontFamily="system-ui">Markham</text>
-
-      {/* Oakville */}
-      <circle cx="646" cy="618" r="3.5" fill="#6BBF44" opacity="0.7"/>
-      <text x="654" y="615" fontSize="7" fill="#5A7040" fontFamily="system-ui">Oakville</text>
-
-      {/* Kitchener */}
-      <circle cx="535" cy="566" r="5" fill="#6BBF44" opacity="0.8"/>
-      <circle cx="535" cy="566" r="9" fill="#6BBF44" opacity="0.12"/>
-      <text x="544" y="563" fontSize="7.5" fill="#4A6630" fontFamily="system-ui" fontWeight="500">Kitchener</text>
-
-      {/* London */}
-      <circle cx="395" cy="570" r="11" fill="#6BBF44" opacity="0.1"/>
-      <circle cx="395" cy="570" r="6" fill="#6BBF44" opacity="0.85"/>
-      <circle cx="395" cy="570" r="2.8" fill="white" opacity="0.8"/>
-      <text x="405" y="567" fontSize="8" fill="#4A6630" fontFamily="system-ui" fontWeight="500">London</text>
-
-      {/* Windsor */}
-      <circle cx="105" cy="576" r="5" fill="#6BBF44" opacity="0.75"/>
-      <circle cx="105" cy="576" r="9" fill="#6BBF44" opacity="0.1"/>
-      <text x="114" y="573" fontSize="7.5" fill="#4A6630" fontFamily="system-ui" fontWeight="500">Windsor</text>
-
-      {/* Barrie */}
-      <circle cx="668" cy="360" r="10" fill="#6BBF44" opacity="0.12"/>
-      <circle cx="668" cy="360" r="5.5" fill="#6BBF44" opacity="0.85"/>
-      <circle cx="668" cy="360" r="2.5" fill="white" opacity="0.8"/>
-      <text x="678" y="357" fontSize="7.5" fill="#4A6630" fontFamily="system-ui" fontWeight="500">Barrie</text>
-
-      {/* Kingston */}
-      <circle cx="1050" cy="500" r="9" fill="#6BBF44" opacity="0.1"/>
-      <circle cx="1050" cy="500" r="5" fill="#6BBF44" opacity="0.8"/>
-      <text x="1059" y="497" fontSize="7.5" fill="#4A6630" fontFamily="system-ui" fontWeight="500">Kingston</text>
-
-      {/* Niagara Falls */}
-      <circle cx="732" cy="740" r="4.5" fill="#6BBF44" opacity="0.75"/>
-      <text x="740" y="737" fontSize="7" fill="#5A7040" fontFamily="system-ui">Niagara Falls</text>
-
-      {/* Sudbury */}
-      <circle cx="672" cy="210" r="9" fill="#6BBF44" opacity="0.1"/>
-      <circle cx="672" cy="210" r="5" fill="#6BBF44" opacity="0.75"/>
-      <text x="681" y="207" fontSize="7.5" fill="#4A6630" fontFamily="system-ui">Sudbury</text>
-
-      {/* Thunder Bay */}
-      <circle cx="240" cy="180" r="5" fill="#6BBF44" opacity="0.65"/>
-      <text x="249" y="177" fontSize="7.5" fill="#4A6630" fontFamily="system-ui">Thunder Bay</text>
-
-      {/* Guelph */}
-      <circle cx="582" cy="548" r="4" fill="#6BBF44" opacity="0.7"/>
-      <text x="590" y="545" fontSize="7" fill="#5A7040" fontFamily="system-ui">Guelph</text>
-
-      {/* Brantford */}
-      <circle cx="588" cy="615" r="3.5" fill="#6BBF44" opacity="0.65"/>
-      <text x="596" y="612" fontSize="7" fill="#5A7040" fontFamily="system-ui">Brantford</text>
-
-      {/* Sarnia */}
-      <circle cx="228" cy="570" r="4" fill="#6BBF44" opacity="0.65"/>
-      <text x="236" y="567" fontSize="7" fill="#5A7040" fontFamily="system-ui">Sarnia</text>
-
-      {/* ── Intersection markers ── */}
-      {[
-        [690, 220], [690, 380], [690, 480], [480, 220], [480, 380],
-        [320, 380], [1040, 220], [1040, 380], [1200, 380], [870, 220],
-      ].map(([cx, cy], i) => (
-        <circle key={i} cx={cx} cy={cy} r="2.5" fill="white" stroke="#C8CBDB" strokeWidth="1"/>
-      ))}
-
-      {/* ── Compass rose ── */}
-      <g transform="translate(1390 845)" opacity="0.16">
-        <circle cx="0" cy="0" r="20" fill="none" stroke="#8892A8" strokeWidth="1"/>
-        <line x1="0" y1="-16" x2="0" y2="16" stroke="#8892A8" strokeWidth="1"/>
-        <line x1="-16" y1="0" x2="16" y2="0" stroke="#8892A8" strokeWidth="1"/>
-        <polygon points="0,-16 -3,-7 3,-7" fill="#8892A8"/>
-        <text x="0" y="-19" textAnchor="middle" fontSize="7" fill="#8892A8" fontFamily="sans-serif">N</text>
-      </g>
-    </svg>
-  );
-}
-
-/* ─── Location Pin ───────────────────────────────────── */
-function LocationPin({
-  style, size = "md", delayClass = "pin-appear", label,
-}: {
-  style: React.CSSProperties;
-  size?: "lg" | "md" | "sm";
-  delayClass?: string;
-  label?: string;
-}) {
-  const sizes = { lg: 14, md: 10, sm: 7 };
-  const r = sizes[size];
-  return (
-    <div className={`absolute ${delayClass}`} style={{ ...style, transform: "translate(-50%, -50%)" }}>
-      {/* Pulse rings */}
-      {size !== "sm" && (
-        <>
-          <span
-            className="absolute inset-0 rounded-full pin-ring"
-            style={{
-              backgroundColor: "#6BBF44",
-              opacity: 0,
-              transformOrigin: "center",
-              width: r * 2 + 8,
-              height: r * 2 + 8,
-              top: -4, left: -4,
-            }}
-          />
-          <span
-            className="absolute inset-0 rounded-full pin-ring-delay"
-            style={{
-              backgroundColor: "#6BBF44",
-              opacity: 0,
-              transformOrigin: "center",
-              width: r * 2 + 8,
-              height: r * 2 + 8,
-              top: -4, left: -4,
-            }}
-          />
-        </>
-      )}
-      {/* Pin dot */}
-      <div
-        className="relative z-10 rounded-full border-2 border-white"
-        style={{
-          width: r * 2,
-          height: r * 2,
-          backgroundColor: "#6BBF44",
-          boxShadow: "0 2px 12px rgba(107,191,68,0.5)",
-        }}
-      />
-      {/* Label */}
-      {label && (
-        <span
-          className="absolute left-1/2 whitespace-nowrap text-[10px] font-semibold text-navy tracking-wide"
-          style={{
-            top: r * 2 + 6,
-            transform: "translateX(-50%)",
-            fontFamily: "var(--font-outfit)",
-            backgroundColor: "rgba(255,255,255,0.9)",
-            padding: "2px 6px",
-            borderRadius: 4,
-          }}
-        >
-          {label}
-        </span>
-      )}
-    </div>
-  );
-}
 
 /* ─── Data ───────────────────────────────────────────── */
 const services = [
@@ -474,10 +172,10 @@ export default function HomePage() {
         className="relative overflow-hidden bg-white"
         style={{ minHeight: "100dvh", paddingTop: "88px" }}
       >
-        {/* Map grid SVG fills everything */}
-        <MapBackground />
+        {/* Hero photo */}
+        <HeroImage src="/hero-home.png" overlayRgb="248,249,251" className="z-[5]" />
 
-        {/* Left panel — keeps text crisp, map visible on right */}
+        {/* Left gradient — keeps text crisp over the photo */}
         <div
           className="absolute inset-0 pointer-events-none z-10"
           style={{
@@ -488,13 +186,13 @@ export default function HomePage() {
 
         {/* Content */}
         <div className="relative z-20 max-w-7xl mx-auto px-6 w-full flex items-center" style={{ minHeight: "calc(100dvh - 72px)" }}>
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-16 items-center w-full py-20">
+          <div className="w-full py-10 lg:py-20">
 
             {/* ── Left: copy ── */}
             <div className="max-w-2xl">
               {/* Eyebrow */}
               <p
-                className="reveal-1 text-xs font-semibold uppercase tracking-[0.2em] mb-8 flex items-center gap-3"
+                className="reveal-1 text-xs font-semibold uppercase tracking-[0.2em] mb-5 md:mb-8 flex items-center gap-3"
                 style={{ color: "#6BBF44", fontFamily: "var(--font-outfit)" }}
               >
                 <span
@@ -509,24 +207,24 @@ export default function HomePage() {
                 className="reveal-2 text-balance"
                 style={{
                   fontFamily: "var(--font-outfit)",
-                  fontSize: "clamp(3rem, 6vw, 5.5rem)",
+                  fontSize: "clamp(1.9rem, 8vw, 5.5rem)",
                   fontWeight: 700,
                   lineHeight: 1.0,
                   letterSpacing: "-0.04em",
                   color: "#1B3A5C",
                 }}
               >
-                Every appliance,<br />
-                delivered and<br />
-                installed{" "}
+                Every Appliance,<br />
+                Delivered and<br />
+                Installed{" "}
                 <span style={{ color: "#6BBF44" }}>
-                  right.
+                  Right.
                 </span>
               </h1>
 
               {/* Subline */}
               <p
-                className="reveal-3 mt-7 text-lg leading-relaxed"
+                className="reveal-3 mt-5 md:mt-7 text-base md:text-lg leading-relaxed"
                 style={{
                   color: "#4A5568",
                   maxWidth: "460px",
@@ -538,7 +236,7 @@ export default function HomePage() {
               </p>
 
               {/* CTAs */}
-              <div className="reveal-4 mt-10 flex flex-col sm:flex-row gap-3">
+              <div className="reveal-4 mt-7 md:mt-10 flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={open}
                   className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-lg font-semibold text-sm"
@@ -572,34 +270,13 @@ export default function HomePage() {
 
               {/* Trust signal */}
               <p
-                className="reveal-5 mt-10 text-xs tracking-wide"
+                className="reveal-5 mt-5 md:mt-10 text-xs tracking-wide"
                 style={{ color: "#94A3B8", fontFamily: "var(--font-outfit)" }}
               >
                 Trusted by Greenpark, Primont, Brookfield, Fieldgate &amp; 7 more Ontario builders
               </p>
             </div>
 
-            {/* ── Right: transparent — lets the map shine through ── */}
-            <div className="hidden lg:block relative" style={{ height: "480px" }}>
-              {/* Toronto — main hub */}
-              <LocationPin style={{ top: "62%", left: "44%" }} size="lg" delayClass="pin-appear" label="Toronto" />
-              {/* Ottawa */}
-              <LocationPin style={{ top: "18%", left: "90%" }} size="md" delayClass="pin-appear-2" label="Ottawa" />
-              {/* London */}
-              <LocationPin style={{ top: "64%", left: "6%" }} size="md" delayClass="pin-appear-2" label="London" />
-              {/* Barrie */}
-              <LocationPin style={{ top: "36%", left: "42%" }} size="sm" delayClass="pin-appear-2" />
-              {/* Hamilton */}
-              <LocationPin style={{ top: "76%", left: "36%" }} size="sm" delayClass="pin-appear-3" />
-              {/* Kingston */}
-              <LocationPin style={{ top: "54%", left: "74%" }} size="sm" delayClass="pin-appear-3" />
-              {/* Kitchener */}
-              <LocationPin style={{ top: "65%", left: "24%" }} size="sm" delayClass="pin-appear-3" />
-              {/* Sudbury */}
-              <LocationPin style={{ top: "18%", left: "43%" }} size="sm" delayClass="pin-appear-2" />
-              {/* Windsor */}
-              <LocationPin style={{ top: "65%", left: "-4%" }} size="sm" delayClass="pin-appear-3" />
-            </div>
           </div>
         </div>
       </section>
@@ -607,9 +284,9 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           SERVICES — 2×2 tile grid
       ══════════════════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#FFFFFF" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14" data-reveal>
+          <div className="mb-8 md:mb-14" data-reveal>
             <p className="text-xs font-semibold uppercase mb-4 flex items-center gap-3"
                style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}>
               <span style={{ display: "inline-block", width: "24px", height: "1px", backgroundColor: "#6BBF44" }} />
@@ -631,7 +308,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {services.map(({ num, title, desc }, idx) => (
               <Link key={num} href="/services"
-                className="group relative flex flex-col justify-between p-8 rounded-2xl overflow-hidden"
+                className="group relative flex flex-col justify-between p-5 sm:p-8 rounded-2xl overflow-hidden"
                 style={{
                   backgroundColor: "#F8F9FB",
                   border: "1px solid rgba(12,20,32,0.07)",
@@ -684,22 +361,22 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           HOW IT WORKS — 3-step process tiles
       ══════════════════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#F4F5F9" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#F4F5F9" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14 text-center" data-reveal>
+          <div className="mb-8 md:mb-14 text-center" data-reveal>
             <p className="text-xs font-semibold uppercase mb-4"
                style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}>
               The Process
             </p>
             <h2 style={{ fontFamily: "var(--font-outfit)", fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1.05, color: "#1B3A5C" }}>
-              Simple From Start To Finish
+              Simple From Start to Finish
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {steps.map(({ num, title, desc }, idx) => (
               <div key={num}
-                className="relative flex flex-col p-8 rounded-2xl"
+                className="relative flex flex-col p-5 md:p-8 rounded-2xl"
                 style={{
                   backgroundColor: "#FFFFFF",
                   border: "1px solid rgba(12,20,32,0.07)",
@@ -749,16 +426,16 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           STATS — 3 tiles
       ══════════════════════════════════════════════ */}
-      <section className="py-20" style={{ backgroundColor: "#FFFFFF", borderTop: "1px solid rgba(12,20,32,0.06)", borderBottom: "1px solid rgba(12,20,32,0.06)" }}>
+      <section className="py-12 md:py-20" style={{ backgroundColor: "#FFFFFF", borderTop: "1px solid rgba(12,20,32,0.06)", borderBottom: "1px solid rgba(12,20,32,0.06)" }}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { target: 15, suffix: "+", label: "Years in business", sub: "Founded 2009" },
-              { target: 5000, suffix: "+", label: "Deliveries completed", sub: "Across Ontario" },
-              { target: 10, suffix: "+", label: "Builder partners", sub: "Trusted by the best" },
+              { target: 100, suffix: "K+", label: "Deliveries completed", sub: "Across Ontario" },
+              { target: 25, suffix: "+", label: "Builder partners", sub: "Trusted by the best" },
             ].map(({ target, suffix, label, sub }, i) => (
               <div key={label}
-                className="flex flex-col items-center text-center p-10 rounded-2xl"
+                className="flex flex-col items-center text-center p-6 md:p-10 rounded-2xl"
                 style={{ backgroundColor: "#F8F9FB", border: "1px solid rgba(12,20,32,0.06)" }}
                 data-reveal
                 data-delay={String(i + 1)}
@@ -777,15 +454,15 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           TRUSTED BUILDERS MARQUEE
       ══════════════════════════════════════════════ */}
-      <section className="py-14 overflow-hidden" style={{ backgroundColor: "#ECEEF4" }}>
+      <section className="py-10 md:py-14 overflow-hidden" style={{ backgroundColor: "#ECEEF4" }}>
         <p className="text-center text-xs font-semibold uppercase mb-8 tracking-widest"
            style={{ color: "#94A3B8", fontFamily: "var(--font-outfit)" }}>
           Trusted by Ontario&apos;s Top Builders
         </p>
         <div className="relative overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+          <div className="absolute left-0 top-0 bottom-0 w-10 sm:w-24 z-10 pointer-events-none"
             style={{ background: "linear-gradient(to right, #ECEEF4, transparent)" }} />
-          <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+          <div className="absolute right-0 top-0 bottom-0 w-10 sm:w-24 z-10 pointer-events-none"
             style={{ background: "linear-gradient(to left, #ECEEF4, transparent)" }} />
           <div className="marquee-track">
             {[...builders, ...builders].map((name, i) => (
@@ -801,9 +478,9 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           WHY CHOOSE 7 SUNS — 3×2 tile grid
       ══════════════════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#FFFFFF" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14" data-reveal>
+          <div className="mb-8 md:mb-14" data-reveal>
             <p className="text-xs font-semibold uppercase mb-4 flex items-center gap-3"
                style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}>
               <span style={{ display: "inline-block", width: "24px", height: "1px", backgroundColor: "#6BBF44" }} />
@@ -825,7 +502,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {differentiators.map(({ title, desc }, idx) => (
               <div key={title}
-                className="group flex flex-col p-7 rounded-2xl"
+                className="group flex flex-col p-4 sm:p-7 rounded-2xl"
                 style={{
                   backgroundColor: "#F8F9FB",
                   border: "1px solid rgba(12,20,32,0.07)",
@@ -868,37 +545,75 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           SERVICE AREAS — City tile grid
       ══════════════════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#F4F5F9" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#F4F5F9" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14" data-reveal>
-            <p className="text-xs font-semibold uppercase mb-4 flex items-center gap-3"
+          <div className="mb-8 md:mb-14 text-center" data-reveal>
+            <p className="text-xs font-semibold uppercase mb-4"
                style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}>
-              <span style={{ display: "inline-block", width: "24px", height: "1px", backgroundColor: "#6BBF44" }} />
               Coverage
             </p>
-            <h2 style={{ fontFamily: "var(--font-outfit)", fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1.05, color: "#1B3A5C" }}>
+            <h2 style={{ fontFamily: "var(--font-outfit)", fontSize: "clamp(2rem, 3.5vw, 3rem)", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1.05, color: "#1B3A5C", marginBottom: "16px" }}>
               We Deliver Across Ontario
             </h2>
+            <p style={{ fontFamily: "var(--font-outfit)", fontSize: "16px", fontWeight: 300, color: "#64748B", lineHeight: 1.7, maxWidth: "520px", margin: "0 auto" }}>
+              From Windsor to Ottawa, Sudbury to Niagara — our team covers the full province.
+            </p>
           </div>
 
-          <div className="flex flex-wrap gap-3" data-reveal data-delay="1">
+          <div className="flex flex-wrap gap-3 justify-center" data-reveal data-delay="1">
             {serviceAreas.map(({ city }) => (
-              <div key={city}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
+              <div
+                key={city}
+                className="flex items-center gap-2.5 px-4 py-3 rounded-2xl"
                 style={{
                   backgroundColor: "#FFFFFF",
                   border: "1px solid rgba(12,20,32,0.08)",
                   fontFamily: "var(--font-outfit)",
-                  fontSize: "14px",
+                  fontSize: "13.5px",
                   color: "#1B3A5C",
-                  fontWeight: 500,
-                  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                  fontWeight: 600,
+                  boxShadow: "0 2px 8px rgba(12,20,32,0.06), 0 1px 2px rgba(12,20,32,0.04)",
+                  transition: "transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s, border-color 0.2s",
+                  cursor: "default",
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.transform = "translateY(-2px)";
+                  el.style.boxShadow = "0 6px 20px rgba(12,20,32,0.1), 0 2px 6px rgba(12,20,32,0.06)";
+                  el.style.borderColor = "rgba(107,191,68,0.4)";
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.transform = "translateY(0)";
+                  el.style.boxShadow = "0 2px 8px rgba(12,20,32,0.06), 0 1px 2px rgba(12,20,32,0.04)";
+                  el.style.borderColor = "rgba(12,20,32,0.08)";
                 }}
               >
-                <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#6BBF44", flexShrink: 0, display: "block" }} />
+                <svg width="13" height="16" viewBox="0 0 13 16" fill="none" style={{ flexShrink: 0 }}>
+                  <path d="M6.5 0C3.46 0 1 2.46 1 5.5c0 4.25 5.5 10 5.5 10S12 9.75 12 5.5C12 2.46 9.54 0 6.5 0z"
+                    fill="#6BBF44" />
+                  <circle cx="6.5" cy="5.5" r="2" fill="#FFFFFF" />
+                </svg>
                 {city}
               </div>
             ))}
+
+            {/* + more tag */}
+            <div
+              className="flex items-center gap-2 px-4 py-3 rounded-2xl"
+              style={{
+                backgroundColor: "rgba(107,191,68,0.08)",
+                border: "1px solid rgba(107,191,68,0.25)",
+                fontFamily: "var(--font-outfit)",
+                fontSize: "13.5px",
+                color: "#4A8C28",
+                fontWeight: 700,
+                boxShadow: "0 2px 8px rgba(107,191,68,0.08)",
+                letterSpacing: "0.01em",
+              }}
+            >
+              + More Across Ontario
+            </div>
           </div>
         </div>
       </section>
@@ -906,9 +621,9 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           TESTIMONIALS — 3 review tiles
       ══════════════════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#FFFFFF" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14 text-center" data-reveal>
+          <div className="mb-8 md:mb-14 text-center" data-reveal>
             <p className="text-xs font-semibold uppercase mb-4"
                style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}>
               Reviews
@@ -921,7 +636,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {testimonials.map(({ quote, name, title, rating }, idx) => (
               <div key={name}
-                className="flex flex-col justify-between p-8 rounded-2xl"
+                className="flex flex-col justify-between p-5 sm:p-8 rounded-2xl"
                 style={{
                   backgroundColor: "#F8F9FB",
                   border: "1px solid rgba(12,20,32,0.07)",
@@ -956,7 +671,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           CTA — Full-width centered
       ══════════════════════════════════════════════ */}
-      <section className="py-28 relative overflow-hidden" style={{ backgroundColor: "#F4F5F9" }}>
+      <section className="py-16 md:py-28 relative overflow-hidden" style={{ backgroundColor: "#F4F5F9" }}>
         <div className="absolute pointer-events-none inset-0"
           style={{ background: "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(107,191,68,0.06) 0%, transparent 70%)" }} />
         <div className="max-w-3xl mx-auto px-6 text-center relative z-10">

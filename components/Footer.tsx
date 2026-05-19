@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useBooking } from "@/lib/BookingContext";
 
 const navLinks = [
@@ -15,6 +16,9 @@ const navLinks = [
 export default function Footer() {
   const year = new Date().getFullYear();
   const { open } = useBooking();
+  const pathname = usePathname();
+
+  if (pathname === "/fisher-paykel") return null;
 
   return (
     <footer className="bg-navy-surface border-t border-white/[0.06]">
@@ -25,11 +29,12 @@ export default function Footer() {
           <div className="md:col-span-1">
             <Link href="/" className="inline-block mb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green rounded-sm">
               <Image
-                src="/logo.png"
+                src="/logo-dark.png"
                 alt="7 Suns Delivery & Logistics"
-                width={140}
-                height={50}
-                className="h-10 w-auto object-contain"
+                width={220}
+                height={80}
+                className="h-16 w-auto object-contain"
+                unoptimized
               />
             </Link>
             <p className="text-muted text-sm leading-relaxed max-w-xs">

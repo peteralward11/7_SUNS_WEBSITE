@@ -104,15 +104,40 @@ export default function AboutPage() {
         className="relative overflow-hidden"
         style={{ backgroundColor: "#F4F5F9", paddingTop: "88px" }}
       >
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(12,20,32,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(12,20,32,0.04) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
-        <div className="relative max-w-7xl mx-auto px-6 py-24 lg:py-32">
+        {/* Hero photo — right side */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/SHOP_IMAGE.png"
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              right: 0,
+              top: 0,
+              height: "100%",
+              width: "68%",
+              objectFit: "cover",
+              objectPosition: "center center",
+            }}
+          />
+          {/* Left-to-right fade so dark text stays readable */}
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to right, rgba(244,245,249,1) 0%, rgba(244,245,249,1) 30%, rgba(244,245,249,0.92) 42%, rgba(244,245,249,0.65) 54%, rgba(244,245,249,0.22) 68%, rgba(244,245,249,0.04) 80%, transparent 90%)",
+          }} />
+          {/* Bottom fade */}
+          <div style={{
+            position: "absolute",
+            bottom: 0, left: 0, right: 0, height: "30%",
+            background: "linear-gradient(to top, rgba(244,245,249,1) 0%, transparent 100%)",
+          }} />
+        </div>
+
+        {/* Mobile: solid overlay so photo doesn't bleed through */}
+        <div className="absolute inset-0 pointer-events-none sm:hidden" style={{ backgroundColor: "rgba(244,245,249,0.88)" }} />
+        <div className="relative max-w-7xl mx-auto px-6 py-12 lg:py-24">
           <div className="max-w-3xl" data-reveal>
             <p
               className="text-xs font-semibold uppercase mb-6 flex items-center gap-3"
@@ -124,7 +149,7 @@ export default function AboutPage() {
             <h1
               style={{
                 fontFamily: "var(--font-outfit)",
-                fontSize: "clamp(2.8rem, 6vw, 5rem)",
+                fontSize: "clamp(1.9rem, 8vw, 5rem)",
                 fontWeight: 700,
                 lineHeight: 1.0,
                 letterSpacing: "-0.04em",
@@ -132,9 +157,8 @@ export default function AboutPage() {
                 marginBottom: "24px",
               }}
             >
-              Ontario&apos;s trusted<br />
-              appliance team,{" "}
-              <span style={{ color: "#6BBF44" }}>since 2009.</span>
+              Done Right.<br />
+              <span style={{ color: "#6BBF44" }}>Every Time.</span>
             </h1>
             <p
               style={{
@@ -155,9 +179,9 @@ export default function AboutPage() {
       {/* ══════════════════════════════════════════════
           COMPANY STORY
       ══════════════════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#FFFFFF" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
             {/* Left: narrative */}
             <div data-reveal>
@@ -179,7 +203,7 @@ export default function AboutPage() {
                   marginBottom: "28px",
                 }}
               >
-                Built on reliability.<br />Grown on trust.
+                Built on Reliability.<br />Grown on Trust.
               </h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
                 <p style={{ fontFamily: "var(--font-outfit)", fontSize: "15px", fontWeight: 300, color: "#4A5568", lineHeight: 1.8 }}>
@@ -197,7 +221,7 @@ export default function AboutPage() {
             {/* Right: founding highlight tile */}
             <div data-reveal="right">
               <div
-                className="rounded-2xl p-12 flex flex-col justify-between"
+                className="rounded-2xl p-6 sm:p-10 md:p-12 flex flex-col justify-between"
                 style={{
                   backgroundColor: "#1B3A5C",
                   minHeight: "380px",
@@ -273,7 +297,7 @@ export default function AboutPage() {
           STATS
       ══════════════════════════════════════════════ */}
       <section
-        className="py-20"
+        className="py-12 md:py-20"
         style={{
           backgroundColor: "#F4F5F9",
           borderTop: "1px solid rgba(12,20,32,0.06)",
@@ -284,12 +308,12 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { target: 15, suffix: "+", label: "Years In Business", sub: "Founded 2009" },
-              { target: 5000, suffix: "+", label: "Deliveries Completed", sub: "Across Ontario" },
-              { target: 10, suffix: "+", label: "Builder Partners", sub: "Trusted By The Best" },
+              { target: 100, suffix: "K+", label: "Deliveries Completed", sub: "Across Ontario" },
+              { target: 25, suffix: "+", label: "Builder Partners", sub: "Trusted By The Best" },
             ].map(({ target, suffix, label, sub }, i) => (
               <div
                 key={label}
-                className="flex flex-col items-center text-center p-10 rounded-2xl"
+                className="flex flex-col items-center text-center p-6 md:p-10 rounded-2xl"
                 style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(12,20,32,0.06)" }}
                 data-reveal
                 data-delay={String(i + 1)}
@@ -322,9 +346,9 @@ export default function AboutPage() {
       {/* ══════════════════════════════════════════════
           TEAM
       ══════════════════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#FFFFFF" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14 text-center" data-reveal>
+          <div className="mb-8 md:mb-14 text-center" data-reveal>
             <p
               className="text-xs font-semibold uppercase mb-4"
               style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}
@@ -341,7 +365,7 @@ export default function AboutPage() {
                 color: "#1B3A5C",
               }}
             >
-              The people behind every delivery.
+              The People Behind Every Delivery.
             </h2>
           </div>
 
@@ -429,9 +453,9 @@ export default function AboutPage() {
       {/* ══════════════════════════════════════════════
           VALUES
       ══════════════════════════════════════════════ */}
-      <section className="py-24" style={{ backgroundColor: "#F4F5F9" }}>
+      <section className="py-14 md:py-24" style={{ backgroundColor: "#F4F5F9" }}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-14" data-reveal>
+          <div className="mb-8 md:mb-14" data-reveal>
             <p
               className="text-xs font-semibold uppercase mb-4 flex items-center gap-3"
               style={{ color: "#6BBF44", letterSpacing: "0.22em", fontFamily: "var(--font-outfit)" }}
@@ -449,7 +473,7 @@ export default function AboutPage() {
                 color: "#1B3A5C",
               }}
             >
-              The standards we hold<br />ourselves to.
+              The Standards We Hold<br />Ourselves To.
             </h2>
           </div>
 
@@ -457,7 +481,7 @@ export default function AboutPage() {
             {values.map(({ title, desc }, idx) => (
               <div
                 key={title}
-                className="flex flex-col p-7 rounded-2xl"
+                className="flex flex-col p-4 sm:p-7 rounded-2xl"
                 style={{
                   backgroundColor: "#FFFFFF",
                   border: "1px solid rgba(12,20,32,0.07)",
