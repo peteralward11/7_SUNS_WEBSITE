@@ -8,7 +8,7 @@ const TEAM_EMAIL = "info@7Suns.ca";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const resend = new Resend(process.env.RESEND_API_KEY ?? "build-placeholder");
   try {
     const body = await req.json();
     const { name, email, phone, inquiry, message } = body;

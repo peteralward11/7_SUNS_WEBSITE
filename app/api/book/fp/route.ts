@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_ANON_KEY!
   );
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const resend = new Resend(process.env.RESEND_API_KEY ?? "build-placeholder");
   try {
     const body = await req.json();
     const {
