@@ -96,15 +96,8 @@ function AddressInput({ value, onChange, error }: { value: string; onChange: (v:
   const [sugs, setSugs] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
   const ref = useRef<HTMLInputElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  function repos() {
-    if (!ref.current) return;
-    const r = ref.current.getBoundingClientRect();
-    setPos({ top: r.bottom + 5, left: r.left, width: r.width });
-  }
 
   async function search(q: string) {
     if (q.trim().length < 3) { setSugs([]); setOpen(false); return; }
@@ -145,7 +138,7 @@ function AddressInput({ value, onChange, error }: { value: string; onChange: (v:
           placeholder="123 Main St, Toronto, ON M5A 1B2"
           autoComplete="off"
           style={{ ...inputStyle(error), paddingRight: 40 }}
-          onFocus={e => { repos(); applyFocus(e, error); }}
+          onFocus={e => { applyFocus(e, error); }}
           onBlur={e => applyBlur(e, error)}
         />
         <span style={{ position: "absolute", right: 13, top: "50%", transform: "translateY(-50%)", color: T.muted, pointerEvents: "none" }}>
@@ -165,7 +158,7 @@ function AddressInput({ value, onChange, error }: { value: string; onChange: (v:
 
       {open && sugs.length > 0 && (
         <div style={{
-          position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 9999,
+          position: "absolute", top: "calc(100% + 5px)", left: 0, width: "100%", zIndex: 9999,
           backgroundColor: "#FFFFFF", borderRadius: 12,
           boxShadow: "0 8px 32px rgba(12,20,32,0.12), 0 2px 8px rgba(12,20,32,0.06)",
           border: `1.5px solid ${T.border}`, overflow: "hidden",
