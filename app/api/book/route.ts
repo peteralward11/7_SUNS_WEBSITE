@@ -37,21 +37,7 @@ async function upsertGHLContact(payload: {
     if (existing) {
       const id = existing.id;
 
-      /* ── 2a. Remove old booking tags ── */
-      await fetch(`${GHL_BASE}/contacts/${id}/tags`, {
-        method: "DELETE",
-        headers,
-        body: JSON.stringify({ tags: ALL_BOOKING_TAGS }),
-      });
-
-      /* ── 2b. Add new tag (triggers "Tag Added" workflow) ── */
-      await fetch(`${GHL_BASE}/contacts/${id}/tags`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ tags: payload.tags }),
-      });
-
-      /* ── 2c. Update contact details & custom fields ── */
+      /* ── 2a. Update contact details & custom fields first ── */
       await fetch(`${GHL_BASE}/contacts/${id}`, {
         method: "PUT",
         headers,
@@ -62,6 +48,20 @@ async function upsertGHLContact(payload: {
           address1: payload.address1,
           customFields: payload.customFields,
         }),
+      });
+
+      /* ── 2b. Remove old booking tags ── */
+      await fetch(`${GHL_BASE}/contacts/${id}/tags`, {
+        method: "DELETE",
+        headers,
+        body: JSON.stringify({ tags: ALL_BOOKING_TAGS }),
+      });
+
+      /* ── 2c. Add new tag last (triggers "Tag Added" workflow after fields are set) ── */
+      await fetch(`${GHL_BASE}/contacts/${id}/tags`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ tags: payload.tags }),
       });
     } else {
       /* ── 3. Create new contact ── */

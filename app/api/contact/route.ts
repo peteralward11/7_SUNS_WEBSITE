@@ -40,21 +40,7 @@ export async function POST(req: NextRequest) {
       if (existing) {
         const id = existing.id;
 
-        /* ── 2a. Remove old booking tags ── */
-        await fetch(`${GHL_BASE}/contacts/${id}/tags`, {
-          method: "DELETE",
-          headers,
-          body: JSON.stringify({ tags: ALL_BOOKING_TAGS }),
-        });
-
-        /* ── 2b. Add new tag (triggers "Tag Added" workflow) ── */
-        await fetch(`${GHL_BASE}/contacts/${id}/tags`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ tags: ["contact-inquiry"] }),
-        });
-
-        /* ── 2c. Update contact details & custom fields ── */
+        /* ── 2a. Update contact details & custom fields first ── */
         await fetch(`${GHL_BASE}/contacts/${id}`, {
           method: "PUT",
           headers,
@@ -67,6 +53,20 @@ export async function POST(req: NextRequest) {
               { key: "message", field_value: message },
             ],
           }),
+        });
+
+        /* ── 2b. Remove old booking tags ── */
+        await fetch(`${GHL_BASE}/contacts/${id}/tags`, {
+          method: "DELETE",
+          headers,
+          body: JSON.stringify({ tags: ALL_BOOKING_TAGS }),
+        });
+
+        /* ── 2c. Add new tag last (triggers "Tag Added" workflow after fields are set) ── */
+        await fetch(`${GHL_BASE}/contacts/${id}/tags`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ tags: ["contact-inquiry"] }),
         });
       } else {
         /* ── 3. Create new contact ── */
