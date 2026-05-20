@@ -4,7 +4,17 @@ import { createClient } from "@supabase/supabase-js";
 const HCP_BASE = "https://api.housecallpro.com";
 const GHL_BASE = "https://services.leadconnectorhq.com";
 
-async function createGHLContact(payload: {
+const ALL_BOOKING_TAGS = ["booking-residential", "booking-builder", "fisher-paykel", "contact-inquiry"];
+
+async function ghlHeaders() {
+  return {
+    Authorization: `Bearer ${process.env.GHL_API_KEY}`,
+    Version: "2021-07-28",
+    "Content-Type": "application/json",
+  };
+}
+
+async function upsertGHLContact(payload: {
   firstName: string;
   lastName: string;
   email: string;
@@ -14,18 +24,56 @@ async function createGHLContact(payload: {
   customFields?: { key: string; field_value: string }[];
 }) {
   try {
-    await fetch(`${GHL_BASE}/contacts/`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.GHL_API_KEY}`,
-        Version: "2021-07-28",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        locationId: process.env.GHL_LOCATION_ID,
-        ...payload,
-      }),
-    });
+    const headers = await ghlHeaders();
+
+    /* ── 1. Search for existing contact by email ── */
+    const searchRes = await fetch(
+      `${GHL_BASE}/contacts/?locationId=${process.env.GHL_LOCATION_ID}&query=${encodeURIComponent(payload.email)}`,
+      { headers }
+    );
+    const searchData = await searchRes.json();
+    const existing = searchData?.contacts?.[0];
+
+    if (existing) {
+      const id = existing.id;
+
+      /* ── 2a. Remove old booking tags ── */
+      await fetch(`${GHL_BASE}/contacts/${id}/tags`, {
+        method: "DELETE",
+        headers,
+        body: JSON.stringify({ tags: ALL_BOOKING_TAGS }),
+      });
+
+      /* ── 2b. Add new tag (triggers "Tag Added" workflow) ── */
+      await fetch(`${GHL_BASE}/contacts/${id}/tags`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ tags: payload.tags }),
+      });
+
+      /* ── 2c. Update contact details & custom fields ── */
+      await fetch(`${GHL_BASE}/contacts/${id}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          phone: payload.phone,
+          address1: payload.address1,
+          customFields: payload.customFields,
+        }),
+      });
+    } else {
+      /* ── 3. Create new contact ── */
+      await fetch(`${GHL_BASE}/contacts/`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          locationId: process.env.GHL_LOCATION_ID,
+          ...payload,
+        }),
+      });
+    }
   } catch (err) {
     console.error("[book] GHL error:", err);
   }
@@ -92,13 +140,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    /* ── 3. Create contact in GoHighLevel ── */
+    /* ── 3. Upsert contact in GoHighLevel ── */
     const nameParts = full_name.trim().split(" ");
     const firstName = nameParts[0];
     const lastName = nameParts.slice(1).join(" ") || "-";
     const tag = isBuilder ? "booking-builder" : "booking-residential";
 
-    await createGHLContact({
+    await upsertGHLContact({
       firstName,
       lastName,
       email,
