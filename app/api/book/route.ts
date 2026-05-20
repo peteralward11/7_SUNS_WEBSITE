@@ -32,7 +32,9 @@ async function upsertGHLContact(payload: {
       { headers }
     );
     const searchData = await searchRes.json();
-    const existing = searchData?.contacts?.[0];
+    const existing = searchData?.contacts?.find(
+      (c: { email?: string }) => c.email?.toLowerCase() === payload.email.toLowerCase()
+    );
 
     if (existing) {
       const id = existing.id;
