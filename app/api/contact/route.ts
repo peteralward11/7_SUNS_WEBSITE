@@ -3,7 +3,7 @@ import { Resend } from "resend";
 import ContactNotification from "@/emails/ContactNotification";
 
 const FROM = "contact@7suns.ca";
-const TEAM_EMAIL = "info@7Suns.ca";
+const TEAM_EMAILS = ["john@7suns.ca", "Nick@7suns.ca"];
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     await resend.emails.send({
       from: FROM,
-      to: TEAM_EMAIL,
+      to: TEAM_EMAILS,
       replyTo: email,
       subject: `Contact: ${name} — ${inquiry ?? "General Inquiry"}`,
       react: ContactNotification({ name, email, phone, inquiry, message }),

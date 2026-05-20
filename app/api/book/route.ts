@@ -5,7 +5,7 @@ import BookingConfirmation from "@/emails/BookingConfirmation";
 import BookingNotification from "@/emails/BookingNotification";
 
 const FROM = "bookings@7suns.ca";
-const TEAM_EMAIL = "info@7Suns.ca";
+const TEAM_EMAILS = ["john@7suns.ca", "Nick@7suns.ca"];
 const HCP_BASE = "https://api.housecallpro.com";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     /* ── 4. Send internal notification email ── */
     await resend.emails.send({
       from: FROM,
-      to: TEAM_EMAIL,
+      to: TEAM_EMAILS,
       replyTo: email,
       subject: `New Booking: ${full_name} — ${preferred_date}`,
       react: BookingNotification({ ...data, created_at: new Date().toISOString() }),
