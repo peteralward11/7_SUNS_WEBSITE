@@ -1,6 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+const GHL_BASE = "https://services.leadconnectorhq.com";
+
+async function createGHLContact(payload: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address1?: string;
+  tags: string[];
+  customFields?: { key: string; field_value: string }[];
+}) {
+  try {
+    await fetch(`${GHL_BASE}/contacts/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.GHL_API_KEY}`,
+        Version: "2021-07-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        locationId: process.env.GHL_LOCATION_ID,
+        ...payload,
+      }),
+    });
+  } catch (err) {
+    console.error("[book/fp] GHL error:", err);
+  }
+}
+
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
@@ -30,7 +59,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Company name required for builder bookings" }, { status: 400 });
     }
 
-    /* ── 2. Serialize appliance entries to string array ── */
+    /* ── 2. Serialize appliance entries ── */
     const appliances: string[] = (appliance_entries as { type: string; type_other?: string }[]).map(e =>
       e.type === "Other" && e.type_other ? `Other: ${e.type_other}` : e.type
     );
@@ -66,7 +95,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    /* ── 4. GoHighLevel (coming soon) ── */
+    /* ── 4. Create contact in GoHighLevel ── */
+    const nameParts = full_name.trim().split(" ");
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(" ") || "-";
+
+    await createGHLContact({
+      firstName,
+      lastName,
+      email,
+      phone,
+      address1: address,
+      tags: ["fisher-paykel"],
+      customFields: [
+        { key: "fp_order_number", field_value: fp_order_number },
+        { key: "preferred_date", field_value: preferred_date },
+        { key: "appliances", field_value: appliances.join(", ") },
+        ...(company_name ? [{ key: "company_name", field_value: company_name }] : []),
+        ...(notes ? [{ key: "notes", field_value: notes }] : []),
+      ],
+    });
 
     return NextResponse.json({ success: true });
   } catch (err) {

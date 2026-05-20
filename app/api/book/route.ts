@@ -2,6 +2,34 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const HCP_BASE = "https://api.housecallpro.com";
+const GHL_BASE = "https://services.leadconnectorhq.com";
+
+async function createGHLContact(payload: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address1?: string;
+  tags: string[];
+  customFields?: { key: string; field_value: string }[];
+}) {
+  try {
+    await fetch(`${GHL_BASE}/contacts/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.GHL_API_KEY}`,
+        Version: "2021-07-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        locationId: process.env.GHL_LOCATION_ID,
+        ...payload,
+      }),
+    });
+  } catch (err) {
+    console.error("[book] GHL error:", err);
+  }
+}
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +92,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    /* ── 3. GoHighLevel (coming soon) ── */
+    /* ── 3. Create contact in GoHighLevel ── */
+    const nameParts = full_name.trim().split(" ");
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(" ") || "-";
+    const tag = isBuilder ? "booking-builder" : "booking-residential";
+
+    await createGHLContact({
+      firstName,
+      lastName,
+      email,
+      phone,
+      address1: address,
+      tags: [tag],
+      customFields: [
+        { key: "preferred_date", field_value: preferred_date },
+        { key: "appliances", field_value: Array.isArray(appliances) ? appliances.join(", ") : appliances },
+        ...(company_name ? [{ key: "company_name", field_value: company_name }] : []),
+        ...(notes ? [{ key: "notes", field_value: notes }] : []),
+        ...(access_notes ? [{ key: "access_notes", field_value: access_notes }] : []),
+      ],
+    });
 
     /* ── 4. HousecallPro integration ── */
     try {
@@ -73,19 +121,10 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
       };
 
-      const nameParts = full_name.trim().split(" ");
-      const firstName = nameParts[0];
-      const lastName = nameParts.slice(1).join(" ") || "-";
-
       const customerRes = await fetch(`${HCP_BASE}/customers`, {
         method: "POST",
         headers: hcpHeaders,
-        body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName,
-          email,
-          mobile_number: phone,
-        }),
+        body: JSON.stringify({ first_name: firstName, last_name: lastName, email, mobile_number: phone }),
       });
       const customer = await customerRes.json();
 
@@ -103,9 +142,7 @@ export async function POST(req: NextRequest) {
         `Preferred Date: ${preferred_date}`,
         access_notes ? `Access Notes: ${access_notes}` : null,
         notes ? `Notes: ${notes}` : null,
-      ]
-        .filter(Boolean)
-        .join("\n");
+      ].filter(Boolean).join("\n");
 
       await fetch(`${HCP_BASE}/jobs`, {
         method: "POST",
