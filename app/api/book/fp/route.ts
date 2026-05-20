@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
-import BookingConfirmation from "@/emails/BookingConfirmation";
-import FPBookingNotification from "@/emails/FPBookingNotification";
-
-const FROM = "bookings@7suns.ca";
-const TEAM_EMAILS = ["john@7suns.ca", "Nick@7suns.ca"];
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +8,6 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_ANON_KEY!
   );
-  const resend = new Resend(process.env.RESEND_API_KEY ?? "build-placeholder");
   try {
     const body = await req.json();
     const {
@@ -73,22 +66,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    /* ── 4. Send customer confirmation email ── */
-    await resend.emails.send({
-      from: FROM,
-      to: email,
-      subject: "Your Fisher & Paykel Delivery is Booked — 7 Suns Delivery & Logistics",
-      react: BookingConfirmation({ ...data, appliances }),
-    });
-
-    /* ── 5. Send internal team notification ── */
-    await resend.emails.send({
-      from: FROM,
-      to: TEAM_EMAILS,
-      replyTo: email,
-      subject: `New F&P Booking: ${full_name} — ${preferred_date}`,
-      react: FPBookingNotification({ ...data, appliances, created_at: new Date().toISOString() }),
-    });
+    /* ── 4. GoHighLevel (coming soon) ── */
 
     return NextResponse.json({ success: true });
   } catch (err) {

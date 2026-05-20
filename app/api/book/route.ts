@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
-import BookingConfirmation from "@/emails/BookingConfirmation";
-import BookingNotification from "@/emails/BookingNotification";
 
-const FROM = "bookings@7suns.ca";
-const TEAM_EMAILS = ["john@7suns.ca", "Nick@7suns.ca"];
 const HCP_BASE = "https://api.housecallpro.com";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +10,6 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_ANON_KEY!
   );
-  const resend = new Resend(process.env.RESEND_API_KEY ?? "build-placeholder");
   try {
     const body = await req.json();
     const {
@@ -70,24 +64,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    /* ── 3. Send customer confirmation email ── */
-    await resend.emails.send({
-      from: FROM,
-      to: email,
-      subject: "Booking Request Received — 7 Suns Delivery & Logistics",
-      react: BookingConfirmation(data),
-    });
+    /* ── 3. GoHighLevel (coming soon) ── */
 
-    /* ── 4. Send internal notification email ── */
-    await resend.emails.send({
-      from: FROM,
-      to: TEAM_EMAILS,
-      replyTo: email,
-      subject: `New Booking: ${full_name} — ${preferred_date}`,
-      react: BookingNotification({ ...data, created_at: new Date().toISOString() }),
-    });
-
-    /* ── 5. HousecallPro integration ── */
+    /* ── 4. HousecallPro integration ── */
     try {
       const hcpHeaders = {
         Authorization: `Token ${process.env.HOUSECALL_PRO_API_KEY}`,
