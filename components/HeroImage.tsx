@@ -1,4 +1,4 @@
-import React from "react";
+import Image from "next/image";
 
 interface HeroImageProps {
   src: string;
@@ -16,11 +16,10 @@ export default function HeroImage({
   className = "",
 }: HeroImageProps) {
   const css = `
-    .hero-img {
+    .hero-img-wrap {
       position: absolute;
       right: 0; top: 0;
       height: 100%; width: 62%;
-      object-fit: cover;
       -webkit-mask-image:
         linear-gradient(to right, transparent 0%, black 30%, black 100%),
         linear-gradient(to bottom, transparent 0%, black 14%, black 55%, transparent 100%);
@@ -31,7 +30,7 @@ export default function HeroImage({
       mask-composite: intersect;
     }
     @media (max-width: 639px) {
-      .hero-img {
+      .hero-img-wrap {
         width: 100%;
         left: 0;
         -webkit-mask-image:
@@ -47,14 +46,16 @@ export default function HeroImage({
   return (
     <div className={`absolute inset-0 pointer-events-none ${className}`} aria-hidden="true">
       <style>{css}</style>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt=""
-        aria-hidden="true"
-        className="hero-img"
-        style={{ objectPosition }}
-      />
+      <div className="hero-img-wrap">
+        <Image
+          src={src}
+          alt=""
+          fill
+          priority
+          sizes="(max-width: 639px) 100vw, 62vw"
+          style={{ objectFit: "cover", objectPosition }}
+        />
+      </div>
       {/* Mobile: gradient heavy on text side, fading to let image breathe on the right */}
       <div
         className="absolute inset-0 sm:hidden"
