@@ -156,6 +156,13 @@ export async function POST(req: NextRequest) {
       customFields: [
         { key: "preferred_date", field_value: preferred_date },
         { key: "appliances", field_value: Array.isArray(appliances) ? appliances.join(", ") : appliances },
+        { key: "installation", field_value: installation ? "Yes" : "No" },
+        { key: "removal", field_value: removal ? "Yes" : "No" },
+        { key: "elevator", field_value: elevator ? "Yes" : "No" },
+        { key: "stair_carry", field_value: stair_carry ? "Yes" : "No" },
+        { key: "project_type", field_value: project_type ?? "residential" },
+        ...(appliance_count ? [{ key: "appliance_count", field_value: String(appliance_count) }] : []),
+        ...(unit_count ? [{ key: "unit_count", field_value: String(unit_count) }] : []),
         ...(company_name ? [{ key: "company_name", field_value: company_name }] : []),
         ...(notes ? [{ key: "notes", field_value: notes }] : []),
         ...(access_notes ? [{ key: "access_notes", field_value: access_notes }] : []),
