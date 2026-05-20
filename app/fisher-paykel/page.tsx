@@ -107,7 +107,7 @@ function AddressInput({ value, onChange, error }: { value: string; onChange: (v:
       const res = await fetch(url, { headers: { "Accept-Language": "en", "User-Agent": "7SunsDelivery/1.0" } });
       const data: NomResult[] = await res.json();
       const list = [...new Set(data.map(fmt).filter(s => s.length > 4))].slice(0, 5);
-      setSugs(list); setOpen(list.length > 0); repos();
+      setSugs(list); setOpen(list.length > 0);
     } catch { /* silent */ } finally { setLoading(false); }
   }
 
