@@ -1,30 +1,45 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { PortalHeader, PortalFooter, StatusBadge } from "../_components/PortalShell";
+import { PortalSidebar, PortalFooter, StatusBadge } from "../_components/PortalShell";
 
 export const dynamic = "force-dynamic";
 
-function Row({ label, value }: { label: string; value?: string | null }) {
+function Field({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
-    <tr style={{ borderBottom: "1px solid #EDEDED" }}>
-      <td style={{ padding: "12px 24px", fontSize: "8.5pt", fontWeight: 700, letterSpacing: "0.04em", color: "#5A5A5A", textTransform: "uppercase", whiteSpace: "nowrap", width: 200 }}>
+    <div>
+      <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "#5A5A5A", textTransform: "uppercase", margin: "0 0 4px" }}>
         {label}
-      </td>
-      <td style={{ padding: "12px 24px", fontSize: "16px", color: "#3A3A3A" }}>{value}</td>
-    </tr>
+      </p>
+      <p style={{ fontSize: "15px", color: "#111111", margin: 0, lineHeight: 1.5 }}>{value}</p>
+    </div>
   );
 }
 
-function BoolRow({ label, value }: { label: string; value?: boolean | null }) {
+function BoolField({ label, value }: { label: string; value?: boolean | null }) {
   return (
-    <tr style={{ borderBottom: "1px solid #EDEDED" }}>
-      <td style={{ padding: "12px 24px", fontSize: "8.5pt", fontWeight: 700, letterSpacing: "0.04em", color: "#5A5A5A", textTransform: "uppercase", whiteSpace: "nowrap", width: 200 }}>
+    <div>
+      <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "#5A5A5A", textTransform: "uppercase", margin: "0 0 4px" }}>
         {label}
-      </td>
-      <td style={{ padding: "12px 24px", fontSize: "16px", color: "#3A3A3A" }}>{value ? "Yes" : "No"}</td>
-    </tr>
+      </p>
+      <p style={{ fontSize: "15px", color: value ? "#1E7E4A" : "#3A3A3A", margin: 0 }}>{value ? "Yes" : "No"}</p>
+    </div>
+  );
+}
+
+function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ backgroundColor: "#FFFFFF", border: "1px solid #D9D9D9", marginBottom: 12 }}>
+      <div style={{ padding: "14px 24px", borderBottom: "1px solid #EDEDED", backgroundColor: "#F5F5F2" }}>
+        <h2 style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#5A5A5A", margin: 0 }}>
+          {title}
+        </h2>
+      </div>
+      <div style={{ padding: "20px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 32px" }}>
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -33,7 +48,6 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
-
   const { data: portalUser } = await supabase
     .from("fp_portal_users")
     .select("is_admin")
@@ -56,114 +70,137 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
     : booking.appliances ?? "—";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#F5F5F2" }}>
-      <PortalHeader isAdmin={isAdmin} />
+    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#F5F5F2" }}>
+      <PortalSidebar isAdmin={isAdmin} />
 
-      <main style={{ flex: 1, padding: "40px", maxWidth: 900, margin: "0 auto", width: "100%" }}>
-        {/* Back + status */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
-          <Link href="/partners" style={{ fontSize: "13px", color: "#5A5A5A", textDecoration: "none" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <div style={{ padding: "32px 40px", flex: 1 }}>
+          {/* Back */}
+          <Link href="/partners" style={{ fontSize: "13px", color: "#5A5A5A", textDecoration: "none", display: "inline-block", marginBottom: 24 }}>
             ← Back to jobs
           </Link>
-          <StatusBadge status={booking.status ?? "pending"} />
+
+          {/* Job header */}
+          <div style={{ backgroundColor: "#FFFFFF", border: "1px solid #D9D9D9", padding: "24px 28px", marginBottom: 12, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+            <div>
+              <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "#5A5A5A", textTransform: "uppercase", margin: "0 0 6px" }}>
+                Fisher &amp; Paykel · Order #{booking.fp_order_number ?? "—"}
+              </p>
+              <h1 style={{ fontSize: "26px", fontWeight: 700, color: "#111111", margin: "0 0 4px", lineHeight: 1.2 }}>
+                {booking.full_name}
+              </h1>
+              <p style={{ fontSize: "14px", color: "#5A5A5A", margin: 0 }}>
+                Submitted {new Date(booking.created_at).toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" })}
+              </p>
+            </div>
+            <StatusBadge status={booking.status ?? "pending"} />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 12, alignItems: "start" }}>
+            {/* Left */}
+            <div>
+              <SectionCard title="Customer">
+                <Field label="Full Name" value={booking.full_name} />
+                <Field label="Email" value={booking.email} />
+                <Field label="Phone" value={booking.phone} />
+              </SectionCard>
+
+              <SectionCard title="Delivery Address">
+                <Field label="Address" value={booking.address} />
+                <Field label="Suite / Unit" value={booking.suite_number} />
+                <Field label="Floor" value={booking.floor_number} />
+              </SectionCard>
+
+              <SectionCard title="Appliances & Services">
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <Field label="Appliances" value={appliances} />
+                </div>
+                <BoolField label="Installation" value={booking.installation} />
+                <BoolField label="Old Unit Removal" value={booking.removal} />
+                <BoolField label="Elevator Required" value={booking.elevator} />
+                <BoolField label="Stair Carry" value={booking.stair_carry} />
+              </SectionCard>
+
+              <SectionCard title="Scheduling">
+                <Field label="Preferred Date" value={booking.preferred_date} />
+                <Field label="Alternate Date" value={booking.alternate_date} />
+                <Field label="Time Window" value={booking.time_window} />
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <Field label="Access Notes" value={booking.access_notes} />
+                </div>
+              </SectionCard>
+
+              {booking.project_type === "builder" && (
+                <SectionCard title="Builder / Commercial">
+                  <Field label="Company" value={booking.company_name} />
+                  <Field label="Unit Count" value={booking.unit_count ? String(booking.unit_count) : null} />
+                  <Field label="Site Contact" value={booking.site_contact_name} />
+                  <Field label="Site Phone" value={booking.site_contact_phone} />
+                </SectionCard>
+              )}
+
+              {booking.notes && (
+                <div style={{ backgroundColor: "#FFFFFF", border: "1px solid #D9D9D9", padding: "20px 24px" }}>
+                  <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "#5A5A5A", textTransform: "uppercase", margin: "0 0 8px" }}>Notes</p>
+                  <p style={{ fontSize: "15px", color: "#3A3A3A", margin: 0, lineHeight: 1.6 }}>{booking.notes}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Right — job summary card */}
+            <div style={{ backgroundColor: "#FFFFFF", border: "1px solid #D9D9D9", padding: "24px" }}>
+              <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "#5A5A5A", textTransform: "uppercase", margin: "0 0 20px" }}>
+                Job Summary
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <SummaryRow label="Type" value={booking.project_type === "builder" ? "Builder / Commercial" : "Residential"} />
+                <SummaryRow label="Order #" value={booking.fp_order_number ?? "—"} />
+                <SummaryRow label="Preferred Date" value={booking.preferred_date ?? "—"} />
+                <SummaryRow label="Appliances" value={appliances} />
+                <div style={{ borderTop: "1px solid #EDEDED", paddingTop: 14 }}>
+                  <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "#5A5A5A", textTransform: "uppercase", margin: "0 0 8px" }}>Status</p>
+                  <StatusBadge status={booking.status ?? "pending"} />
+                </div>
+              </div>
+
+              {isAdmin && (
+                <div style={{ marginTop: 24, borderTop: "1px solid #EDEDED", paddingTop: 20 }}>
+                  <Link
+                    href={`/partners/admin/${booking.id}`}
+                    style={{
+                      display: "block",
+                      textAlign: "center",
+                      padding: "0 24px",
+                      height: 38,
+                      lineHeight: "38px",
+                      backgroundColor: "#111111",
+                      color: "#FFFFFF",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      textDecoration: "none",
+                    }}
+                  >
+                    Manage in Admin
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Header */}
-        <div style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "#5A5A5A", textTransform: "uppercase", margin: "0 0 8px" }}>
-            Delivery Job
-          </p>
-          <h1 style={{ fontSize: "26px", fontWeight: 700, color: "#111111", margin: 0, lineHeight: 1.2 }}>
-            {booking.full_name}
-          </h1>
-          <p style={{ fontSize: "16px", color: "#5A5A5A", margin: "4px 0 0" }}>
-            Fisher &amp; Paykel Order #{booking.fp_order_number ?? "—"}
-          </p>
-        </div>
-
-        {/* Customer details */}
-        <Section title="Customer">
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <tbody>
-              <Row label="Name" value={booking.full_name} />
-              <Row label="Email" value={booking.email} />
-              <Row label="Phone" value={booking.phone} />
-            </tbody>
-          </table>
-        </Section>
-
-        {/* Delivery details */}
-        <Section title="Delivery Address">
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <tbody>
-              <Row label="Address" value={booking.address} />
-              <Row label="Suite / Unit" value={booking.suite_number} />
-              <Row label="Floor" value={booking.floor_number} />
-            </tbody>
-          </table>
-        </Section>
-
-        {/* Appliances & services */}
-        <Section title="Appliances & Services">
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <tbody>
-              <Row label="Appliances" value={appliances} />
-              <BoolRow label="Installation" value={booking.installation} />
-              <BoolRow label="Removal" value={booking.removal} />
-              <BoolRow label="Elevator required" value={booking.elevator} />
-              <BoolRow label="Stair carry" value={booking.stair_carry} />
-            </tbody>
-          </table>
-        </Section>
-
-        {/* Scheduling */}
-        <Section title="Scheduling">
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <tbody>
-              <Row label="Preferred date" value={booking.preferred_date} />
-              <Row label="Alternate date" value={booking.alternate_date} />
-              <Row label="Time window" value={booking.time_window} />
-              <Row label="Access notes" value={booking.access_notes} />
-            </tbody>
-          </table>
-        </Section>
-
-        {/* Builder fields (if applicable) */}
-        {booking.project_type === "builder" && (
-          <Section title="Builder / Commercial">
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <tbody>
-                <Row label="Company" value={booking.company_name} />
-                <Row label="Site contact" value={booking.site_contact_name} />
-                <Row label="Site phone" value={booking.site_contact_phone} />
-                <Row label="Unit count" value={booking.unit_count ? String(booking.unit_count) : null} />
-              </tbody>
-            </table>
-          </Section>
-        )}
-
-        {/* Notes */}
-        {booking.notes && (
-          <Section title="Notes">
-            <p style={{ padding: "12px 24px", fontSize: "16px", color: "#3A3A3A", margin: 0, lineHeight: 1.6 }}>
-              {booking.notes}
-            </p>
-          </Section>
-        )}
-      </main>
-
-      <PortalFooter />
+        <PortalFooter />
+      </div>
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ backgroundColor: "#FFFFFF", border: "1px solid #D9D9D9", marginBottom: 16 }}>
-      <div style={{ padding: "14px 24px", borderBottom: "1px solid #EDEDED" }}>
-        <h2 style={{ fontSize: "13px", fontWeight: 700, color: "#111111", margin: 0 }}>{title}</h2>
-      </div>
-      {children}
+    <div>
+      <p style={{ fontSize: "11px", color: "#7A7A7A", margin: "0 0 2px" }}>{label}</p>
+      <p style={{ fontSize: "14px", color: "#111111", margin: 0, fontWeight: 500 }}>{value}</p>
     </div>
   );
 }
