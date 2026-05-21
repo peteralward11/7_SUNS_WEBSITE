@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Fraunces, Outfit } from "next/font/google";
 import "./globals.css";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
 import { BookingProvider } from "@/lib/BookingContext";
-import BookingModal from "@/components/BookingModal";
+import SiteShell from "@/app/_components/SiteShell";
 
 /* Display serif — for hero headlines only */
 const fraunces = Fraunces({
@@ -36,10 +34,7 @@ export default function RootLayout({
     <html lang="en" className={`${fraunces.variable} ${outfit.variable}`}>
       <body className="min-h-screen flex flex-col text-white" style={{ backgroundColor: "#0C1420" }}>
         <BookingProvider>
-          <Nav />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <BookingModal />
+          <SiteShell>{children}</SiteShell>
         </BookingProvider>
       </body>
     </html>
