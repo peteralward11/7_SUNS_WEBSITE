@@ -87,11 +87,7 @@ export default async function PartnersPage() {
                       key={job.id}
                       style={{
                         borderBottom: i < jobs.length - 1 ? "1px solid #EDEDED" : "none",
-                        cursor: "pointer",
-                        transition: "background-color 200ms ease",
                       }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#EDEDED")}
-                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = "")}
                     >
                       <td style={{ padding: "14px 24px" }}>
                         <Link href={`/partners/${job.id}`} style={{ textDecoration: "none", color: "#111111", fontSize: "16px", fontWeight: 500 }}>
