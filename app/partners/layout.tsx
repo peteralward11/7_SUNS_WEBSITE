@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import ThemeProvider from "./_components/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "Fisher & Paykel | Friends & Family Delivery Portal",
@@ -8,13 +9,70 @@ export const metadata: Metadata = {
 
 export default function PartnersLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
-      fontFamily: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      backgroundColor: "#F5F5F2",
-      color: "#111111",
-      minHeight: "100vh",
-    }}>
+    <ThemeProvider>
+      <style>{`
+        [data-theme="light"] {
+          --bg: #F5F5F2;
+          --surface: #FFFFFF;
+          --sidebar: #111111;
+          --text: #111111;
+          --text-2: #5A5A5A;
+          --text-3: #7A7A7A;
+          --border: #D9D9D9;
+          --hairline: #EDEDED;
+          --hover: #F5F5F2;
+          --input-bg: #FFFFFF;
+        }
+        [data-theme="dark"] {
+          --bg: #0A0A0A;
+          --surface: #141414;
+          --sidebar: #111111;
+          --text: #FFFFFF;
+          --text-2: #8A8A8A;
+          --text-3: #5A5A5A;
+          --border: #2A2A2A;
+          --hairline: #1C1C1C;
+          --hover: #1C1C1C;
+          --input-bg: #1A1A1A;
+        }
+        [data-theme] {
+          font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+          background-color: var(--bg);
+          color: var(--text);
+        }
+        * { box-sizing: border-box; }
+        @keyframes fp-slide-in {
+          from { transform: translateX(100%); }
+          to   { transform: translateX(0); }
+        }
+        @keyframes fp-fade-in {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes fp-bar-grow {
+          from { transform: scaleY(0); }
+          to   { transform: scaleY(1); }
+        }
+        .fp-drawer {
+          animation: fp-slide-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .fp-backdrop {
+          animation: fp-fade-in 200ms ease;
+        }
+        .fp-bar {
+          transform-origin: bottom;
+          animation: fp-bar-grow 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @media (max-width: 768px) {
+          .fp-sidebar { display: none !important; }
+          .fp-mobile-topbar { display: flex !important; }
+          .fp-main-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (min-width: 769px) {
+          .fp-mobile-topbar { display: none !important; }
+        }
+      `}</style>
       {children}
-    </div>
+    </ThemeProvider>
   );
 }
