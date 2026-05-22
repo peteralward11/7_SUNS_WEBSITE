@@ -28,20 +28,25 @@ export default function PhotoGallery({
     setUploading(true);
     setError(null);
 
-    for (const file of Array.from(files)) {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("booking_id", bookingId);
-      const res = await fetch("/api/partners/photos", { method: "POST", body: fd });
-      const data = await res.json();
-      if (data.photo) {
-        setPhotos(p => [...p, data.photo]);
-      } else {
-        setError(data.error ?? "Upload failed — please try again.");
+    try {
+      for (const file of Array.from(files)) {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("booking_id", bookingId);
+        const res = await fetch("/api/partners/photos", { method: "POST", body: fd });
+        let data: { photo?: unknown; error?: string } = {};
+        try { data = await res.json(); } catch { data = {}; }
+        if (data.photo) {
+          setPhotos(p => [...p, data.photo as Photo]);
+        } else {
+          setError(data.error ?? `Upload failed (${res.status}) — please try again.`);
+        }
       }
+    } catch (e) {
+      setError("Network error — please check your connection and try again.");
+      console.error("[photos] upload exception:", e);
     }
 
-    // Reset input so the same file can be selected again
     if (inputRef.current) inputRef.current.value = "";
     setUploading(false);
   }

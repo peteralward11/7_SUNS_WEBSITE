@@ -49,6 +49,9 @@ export async function POST(req: NextRequest) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: "Database error" }, { status: 500 });
+  if (error) {
+    console.error("[photos] db error:", error);
+    return NextResponse.json({ error: `Database error: ${error.message}` }, { status: 500 });
+  }
   return NextResponse.json({ photo: data });
 }
