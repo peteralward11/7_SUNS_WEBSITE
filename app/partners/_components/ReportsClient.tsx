@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo } from "react";
 
 type Period = "week" | "month" | "year" | "all";
 
@@ -210,72 +210,100 @@ function StatCard({ label, value, change, period }: { label: string; value: stri
   );
 }
 
+const CHART_H = 160;
+const GRID_PCTS = [1, 0.75, 0.5, 0.25, 0];
+
 function RevenueBarChart({ data }: { data: { label: string; amount: number }[] }) {
-  const barsRef = useRef<SVGGElement>(null);
   const max  = Math.max(...data.map(d => d.amount), 1);
   const yMax = niceMax(max);
-
-  const chartH = 110;
-  const barW   = data.length > 8 ? 16 : 22;
-  const gap    = data.length > 8 ? 6  : 10;
-  const yAxisW = 42;
-  const totalW = yAxisW + data.length * (barW + gap) - gap;
-  const gridPcts = [1, 0.75, 0.5, 0.25, 0];
-
-  useEffect(() => {
-    barsRef.current?.querySelectorAll<SVGElement>(".rev-bar").forEach((el, i) => {
-      el.style.animationDelay = `${i * 35}ms`;
-    });
-  }, [data]);
+  const dense = data.length > 8;
 
   return (
-    <svg width="100%" viewBox={`0 0 ${totalW} ${chartH + 28}`} style={{ display: "block", overflow: "visible" }}>
-      {/* Grid lines + y-axis labels */}
-      {gridPcts.map((pct, i) => {
-        const val  = yMax * pct;
-        const y    = (1 - pct) * chartH;
-        const base = i === gridPcts.length - 1;
-        return (
-          <g key={i}>
-            <text x={yAxisW - 5} y={y + 3.5} textAnchor="end" fontSize="8" fill="var(--text-3)" fontFamily="inherit">
-              {fmtCurrencyShort(val)}
-            </text>
-            <line x1={yAxisW} y1={y} x2={totalW} y2={y}
-              stroke={base ? "var(--border)" : "var(--hairline)"}
-              strokeWidth={base ? 1 : 0.5}
-            />
-          </g>
-        );
-      })}
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
+      {/* Y-axis labels */}
+      <div style={{ width: 44, flexShrink: 0, position: "relative", height: CHART_H }}>
+        {GRID_PCTS.map((pct, i) => (
+          <span key={i} style={{
+            position: "absolute",
+            right: 8,
+            top: (1 - pct) * CHART_H - 7,
+            fontSize: "10px",
+            lineHeight: 1,
+            color: "var(--text-3)",
+            whiteSpace: "nowrap",
+          }}>
+            {fmtCurrencyShort(yMax * pct)}
+          </span>
+        ))}
+      </div>
 
-      {/* Bars + x-labels */}
-      <g ref={barsRef}>
-        {data.map((d, i) => {
-          const x    = yAxisW + i * (barW + gap);
-          const barH = yMax > 0 ? Math.max((d.amount / yMax) * chartH, d.amount > 0 ? 3 : 0) : 0;
-          return (
-            <g key={i}>
-              <title>{fmtCurrencyFull(d.amount)}</title>
-              <rect
-                className="rev-bar"
-                x={x} y={chartH - barH}
-                width={barW} height={barH}
-                fill="#E8A33D" rx={2}
-                opacity={d.amount === 0 ? 0.15 : 1}
-              />
-              <text
-                x={x + barW / 2} y={chartH + 16}
-                textAnchor="middle"
-                fontSize={data.length > 8 ? "7" : "8"}
-                fill="var(--text-3)" fontFamily="inherit"
-              >
-                {d.label}
-              </text>
-            </g>
-          );
-        })}
-      </g>
-    </svg>
+      {/* Chart body */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Bars area */}
+        <div style={{ position: "relative", height: CHART_H }}>
+          {/* Gridlines */}
+          {GRID_PCTS.map((pct, i) => (
+            <div key={i} style={{
+              position: "absolute",
+              left: 0, right: 0,
+              top: (1 - pct) * CHART_H,
+              borderTop: i === GRID_PCTS.length - 1
+                ? "1px solid var(--border)"
+                : "1px solid rgba(0,0,0,0.06)",
+              pointerEvents: "none",
+            }} />
+          ))}
+
+          {/* Bars */}
+          <div style={{
+            position: "absolute", inset: 0,
+            display: "flex", alignItems: "flex-end",
+            gap: dense ? 3 : 5,
+            padding: "0 2px",
+          }}>
+            {data.map((d, i) => {
+              const hPct = yMax > 0 ? Math.max((d.amount / yMax) * 100, d.amount > 0 ? 1.5 : 0) : 0;
+              return (
+                <div
+                  key={i}
+                  title={fmtCurrencyFull(d.amount)}
+                  style={{
+                    flex: 1,
+                    height: `${hPct}%`,
+                    minHeight: d.amount > 0 ? 3 : 0,
+                    backgroundColor: "#E8A33D",
+                    borderRadius: "2px 2px 0 0",
+                    opacity: d.amount === 0 ? 0.18 : 1,
+                    transition: "height 250ms ease",
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* X-axis labels */}
+        <div style={{
+          display: "flex",
+          gap: dense ? 3 : 5,
+          padding: "6px 2px 0",
+        }}>
+          {data.map((d, i) => (
+            <div key={i} style={{
+              flex: 1,
+              textAlign: "center",
+              fontSize: dense ? "9px" : "10px",
+              color: "var(--text-3)",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}>
+              {d.label}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
