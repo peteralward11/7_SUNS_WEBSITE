@@ -30,9 +30,6 @@ export default function ActivityLog({ bookingId, isAdmin }: { bookingId: string;
       .then(d => setEntries(d.entries ?? []));
   }, [bookingId]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [entries]);
 
   async function postNote() {
     if (!note.trim() || posting) return;
@@ -46,6 +43,7 @@ export default function ActivityLog({ bookingId, isAdmin }: { bookingId: string;
       created_at: new Date().toISOString(),
     };
     setEntries(e => [...e, optimistic]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     setNote("");
     const res = await fetch("/api/partners/activity", {
       method: "POST",
