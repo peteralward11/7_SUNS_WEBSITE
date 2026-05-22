@@ -38,16 +38,27 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
     .single();
   if (!portalUser?.is_admin) redirect("/partners");
 
-  const { data: jobs } = await adminClient()
-    .from("bookings")
-    .select("id, full_name, email, phone, address, preferred_date, appliances, status, created_at, fp_order_number, archived")
-    .eq("source", "fisher_paykel")
-    .ilike("email", email)
-    .order("created_at", { ascending: false });
+  const [{ data: allBookings }, { data: paidInvoices }] = await Promise.all([
+    adminClient()
+      .from("bookings")
+      .select("id, full_name, email, phone, address, preferred_date, appliances, status, created_at, fp_order_number, archived")
+      .in("source", ["fisher_paykel", "direct"])
+      .ilike("email", email)
+      .order("created_at", { ascending: false }),
+    adminClient()
+      .from("fp_invoices")
+      .select("booking_id, amount")
+      .eq("status", "paid"),
+  ]);
 
-  if (!jobs || jobs.length === 0) notFound();
+  if (!allBookings || allBookings.length === 0) notFound();
 
-  const latest = jobs[0];
+  const jobs = allBookings.filter(j => j.status !== "contact");
+  const latest = allBookings[0];
+  const bookingIds = new Set(allBookings.map(j => j.id));
+  const ltv = (paidInvoices ?? [])
+    .filter(inv => bookingIds.has(inv.booking_id))
+    .reduce((sum, inv) => sum + Number(inv.amount), 0);
   const miniJobs = jobs.map(j => ({ id: j.id, created_at: j.created_at }));
 
   return (
@@ -78,16 +89,20 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
 
         {/* Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 32 }}>
-          {[
-            { label: "Total Jobs", value: jobs.length },
-            { label: "Paid Jobs", value: jobs.filter(j => j.status === "paid").length },
-            { label: "Archived", value: jobs.filter(j => j.archived).length },
-          ].map(s => (
-            <div key={s.label} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "16px 20px" }}>
-              <p style={{ fontSize: "26px", fontWeight: 700, color: "var(--text)", margin: 0 }}>{s.value}</p>
-              <p style={{ fontSize: "11px", color: "var(--text-3)", margin: "3px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>{s.label}</p>
-            </div>
-          ))}
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "16px 20px" }}>
+            <p style={{ fontSize: "26px", fontWeight: 700, color: "var(--text)", margin: 0 }}>{jobs.length}</p>
+            <p style={{ fontSize: "11px", color: "var(--text-3)", margin: "3px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Jobs</p>
+          </div>
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "16px 20px" }}>
+            <p style={{ fontSize: "26px", fontWeight: 700, color: "var(--text)", margin: 0 }}>{jobs.filter(j => j.status === "paid").length}</p>
+            <p style={{ fontSize: "11px", color: "var(--text-3)", margin: "3px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Paid Jobs</p>
+          </div>
+          <div style={{ backgroundColor: ltv > 0 ? "rgba(30,126,74,0.06)" : "var(--surface)", border: `1px solid ${ltv > 0 ? "rgba(30,126,74,0.2)" : "var(--border)"}`, borderRadius: 10, padding: "16px 20px" }}>
+            <p style={{ fontSize: "26px", fontWeight: 700, color: ltv > 0 ? "#1E7E4A" : "var(--text)", margin: 0 }}>
+              {ltv > 0 ? new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(ltv) : "—"}
+            </p>
+            <p style={{ fontSize: "11px", color: "var(--text-3)", margin: "3px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Lifetime Value</p>
+          </div>
         </div>
 
         {/* Job history */}
@@ -96,6 +111,9 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
             Job History
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {jobs.length === 0 && (
+              <p style={{ fontSize: "13px", color: "var(--text-3)", margin: 0 }}>No jobs yet.</p>
+            )}
             {jobs.map(job => (
               <Link
                 key={job.id}
