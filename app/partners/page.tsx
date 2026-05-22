@@ -17,20 +17,23 @@ export default async function PartnersPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: portalUser } = await supabase
-    .from("fp_portal_users")
-    .select("is_admin, name")
-    .eq("email", user?.email ?? "")
-    .single();
+  const [portalUserRes, bookingsRes] = await Promise.all([
+    supabase
+      .from("fp_portal_users")
+      .select("is_admin, name")
+      .eq("email", user?.email ?? "")
+      .single(),
+    supabase
+      .from("bookings")
+      .select("id, full_name, email, address, preferred_date, appliances, status, created_at, project_type, fp_order_number, archived")
+      .eq("source", "fisher_paykel")
+      .order("created_at", { ascending: false }),
+  ]);
 
+  const portalUser = portalUserRes.data;
   const isAdmin = portalUser?.is_admin ?? false;
   const firstName = portalUser?.name?.split(" ")[0] ?? null;
-
-  const { data: bookings } = await supabase
-    .from("bookings")
-    .select("id, full_name, email, address, preferred_date, appliances, status, created_at, project_type, fp_order_number, archived")
-    .eq("source", "fisher_paykel")
-    .order("created_at", { ascending: false });
+  const bookings = bookingsRes.data;
 
   const jobs = bookings ?? [];
   const pending = jobs.filter(j => (j.status ?? "pending") === "pending").length;

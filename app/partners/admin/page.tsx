@@ -69,15 +69,12 @@ export default async function AdminPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: portalUser } = await supabase
-    .from("fp_portal_users")
-    .select("is_admin, name")
-    .eq("email", user?.email ?? "")
-    .single();
-
-  if (!portalUser?.is_admin) redirect("/partners");
-
-  const [bookingsRes, activityRes] = await Promise.all([
+  const [portalUserRes, bookingsRes, activityRes] = await Promise.all([
+    supabase
+      .from("fp_portal_users")
+      .select("is_admin, name")
+      .eq("email", user?.email ?? "")
+      .single(),
     supabase
       .from("bookings")
       .select("id, created_at, status")
@@ -89,6 +86,9 @@ export default async function AdminPage() {
       .order("created_at", { ascending: false })
       .limit(10),
   ]);
+
+  const portalUser = portalUserRes.data;
+  if (!portalUser?.is_admin) redirect("/partners");
 
   const jobs = bookingsRes.data ?? [];
   const recentActivity = activityRes.data ?? [];
