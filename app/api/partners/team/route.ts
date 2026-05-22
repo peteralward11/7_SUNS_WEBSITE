@@ -40,12 +40,12 @@ export async function POST(req: NextRequest) {
   const user = await verifyAdmin();
   if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { name, role, color } = await req.json();
+  const { name, role, color, email } = await req.json();
   if (!name?.trim() || !role) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
 
   const { data, error } = await adminClient()
     .from("fp_team_members")
-    .insert({ name: name.trim(), role, color: color ?? "#E8A33D" })
+    .insert({ name: name.trim(), role, color: color ?? "#E8A33D", email: email?.trim() || null })
     .select()
     .single();
 

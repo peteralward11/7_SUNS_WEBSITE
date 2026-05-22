@@ -32,10 +32,11 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await req.json();
-  const updates: Record<string, string> = {};
+  const updates: Record<string, string | null> = {};
   if (body.name !== undefined) updates.name = body.name.trim();
   if (body.role !== undefined) updates.role = body.role;
   if (body.color !== undefined) updates.color = body.color;
+  if (body.email !== undefined) updates.email = body.email?.trim() || null;
 
   const { data, error } = await adminClient()
     .from("fp_team_members")

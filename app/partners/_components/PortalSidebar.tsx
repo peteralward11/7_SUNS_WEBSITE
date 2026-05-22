@@ -85,6 +85,17 @@ function IconUsers() {
   );
 }
 
+function IconTeam() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M20 21a8 8 0 1 0-16 0" />
+      <line x1="19" y1="8" x2="19" y2="14" />
+      <line x1="22" y1="11" x2="16" y2="11" />
+    </svg>
+  );
+}
+
 function IconChevronLeft() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -224,22 +235,39 @@ export default function PortalSidebar({ isAdmin, userName, userEmail, newJobCoun
               active={pathname === "/partners/reports"}
               collapsed={collapsed}
             />
+            <NavLink
+              href="/partners/admin/team"
+              label="Team"
+              icon={<IconTeam />}
+              active={pathname.startsWith("/partners/admin/team")}
+              collapsed={collapsed}
+            />
             <div style={{ height: "1px", backgroundColor: "#1E1E1E", margin: collapsed ? "8px 12px" : "8px 20px" }} />
           </>
         )}
         {!collapsed && (
           <p style={{ fontSize: "7pt", fontWeight: 700, letterSpacing: "0.1em", color: "#3A3A3A", textTransform: "uppercase", margin: "8px 20px 4px", userSelect: "none" }}>
-            Jobs
+            {isAdmin ? "Jobs" : "Schedule"}
           </p>
         )}
-        <NavLink
-          href="/partners"
-          label="All Jobs"
-          icon={<IconBriefcase />}
-          active={pathname === "/partners"}
-          collapsed={collapsed}
-          badge={newJobCount > 0 ? newJobCount : undefined}
-        />
+        {isAdmin ? (
+          <NavLink
+            href="/partners"
+            label="All Jobs"
+            icon={<IconBriefcase />}
+            active={pathname === "/partners"}
+            collapsed={collapsed}
+            badge={newJobCount > 0 ? newJobCount : undefined}
+          />
+        ) : (
+          <NavLink
+            href="/partners/my-schedule"
+            label="My Schedule"
+            icon={<IconCalendar />}
+            active={pathname.startsWith("/partners/my-schedule")}
+            collapsed={collapsed}
+          />
+        )}
         {isAdmin && (
           <NavLink
             href="/partners/schedule"
