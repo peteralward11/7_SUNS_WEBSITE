@@ -5,6 +5,8 @@ import { Resend } from "resend";
 
 export const dynamic = "force-dynamic";
 
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://7suns.ca";
+
 function adminClient() {
   return createServiceClient(
     (process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL)!,
@@ -60,6 +62,8 @@ export async function POST(
       </tr>`)
     .join("");
 
+  const approveUrl = `${SITE}/api/quotes/${quote.id}/approve`;
+
   const html = `
 <!DOCTYPE html>
 <html>
@@ -67,13 +71,13 @@ export async function POST(
 <body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
   <div style="max-width:560px;margin:40px auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
     <div style="background:#111111;padding:28px 32px;">
-      <p style="margin:0;color:#E8A33D;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">7 Suns Appliances</p>
+      <p style="margin:0;color:#E8A33D;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">7 Suns Delivery and Logistics</p>
       <h1 style="margin:6px 0 0;color:#ffffff;font-size:22px;font-weight:700;">Your Quote</h1>
     </div>
     <div style="padding:32px;">
       <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.6;">
         Hi ${booking.full_name ?? "there"},<br/>
-        Here's a summary of your quote from 7 Suns Appliances.
+        Here's a summary of your quote from 7 Suns Delivery and Logistics.
       </p>
       <table style="width:100%;border-collapse:collapse;">
         <thead>
@@ -90,13 +94,21 @@ export async function POST(
           </tr>
         </tfoot>
       </table>
-      <p style="margin:32px 0 0;color:#6b7280;font-size:13px;line-height:1.6;">
+
+      <div style="margin:32px 0 0;text-align:center;">
+        <a href="${approveUrl}" style="display:inline-block;padding:14px 32px;background:#111111;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;letter-spacing:0.01em;">
+          Approve Quote →
+        </a>
+        <p style="margin:12px 0 0;font-size:12px;color:#9ca3af;">One click — no account needed</p>
+      </div>
+
+      <p style="margin:32px 0 0;color:#6b7280;font-size:13px;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:24px;">
         If you have any questions, reply to this email or give us a call.<br/>
-        Thank you for choosing 7 Suns Appliances.
+        Thank you for choosing 7 Suns Delivery and Logistics.
       </p>
     </div>
     <div style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
-      <p style="margin:0;color:#9ca3af;font-size:12px;">7 Suns Appliances &mdash; 7suns.ca</p>
+      <p style="margin:0;color:#9ca3af;font-size:12px;">7 Suns Delivery and Logistics &mdash; 7suns.ca</p>
     </div>
   </div>
 </body>
