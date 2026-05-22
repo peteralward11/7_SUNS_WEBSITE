@@ -45,7 +45,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
       .from("bookings")
       .select("id, full_name, email, phone, address, preferred_date, appliances, status, created_at, fp_order_number, archived")
       .in("source", ["fisher_paykel", "direct"])
-      .ilike("email", email)
+      .eq("email", email)
       .order("created_at", { ascending: false }),
     adminClient()
       .from("fp_invoices")

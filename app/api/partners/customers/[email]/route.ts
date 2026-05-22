@@ -36,7 +36,7 @@ export async function GET(
       .from("bookings")
       .select("id, full_name, email, phone, address, preferred_date, appliances, status, created_at, fp_order_number, archived")
       .in("source", ["fisher_paykel", "direct"])
-      .ilike("email", decoded)
+      .eq("email", decoded)
       .order("created_at", { ascending: false }),
     admin
       .from("fp_invoices")
@@ -99,7 +99,7 @@ export async function PATCH(
     .from("bookings")
     .update(updates)
     .in("source", ["fisher_paykel", "direct"])
-    .ilike("email", decoded);
+    .eq("email", decoded);
 
   if (error) {
     console.error("[customers/patch] error:", error);
@@ -132,7 +132,7 @@ export async function DELETE(
     .from("bookings")
     .select("id")
     .in("source", ["fisher_paykel", "direct"])
-    .ilike("email", decoded);
+    .eq("email", decoded);
 
   const ids = (bookings ?? []).map(b => b.id);
 
