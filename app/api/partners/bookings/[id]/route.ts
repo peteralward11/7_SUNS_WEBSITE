@@ -71,7 +71,8 @@ export async function PATCH(
       const { error } = await supabase
         .from("bookings")
         .update({ archived: body.archived })
-        .eq("id", id);
+        .eq("id", id)
+        .in("source", ["fisher_paykel", "direct"]);
       if (error) return NextResponse.json({ error: "Database error" }, { status: 500 });
       return NextResponse.json({ success: true });
     }
@@ -86,12 +87,14 @@ export async function PATCH(
       .from("bookings")
       .select("email, status, full_name")
       .eq("id", id)
+      .in("source", ["fisher_paykel", "direct"])
       .single();
 
     const { error } = await supabase
       .from("bookings")
       .update({ status })
-      .eq("id", id);
+      .eq("id", id)
+      .in("source", ["fisher_paykel", "direct"]);
 
     if (error) {
       console.error("[partners/bookings] update error:", error);
@@ -156,7 +159,8 @@ export async function DELETE(
     const { error } = await admin
       .from("bookings")
       .delete()
-      .eq("id", id);
+      .eq("id", id)
+      .in("source", ["fisher_paykel", "direct"]);
 
     if (error) {
       console.error("[partners/bookings] delete error:", error);

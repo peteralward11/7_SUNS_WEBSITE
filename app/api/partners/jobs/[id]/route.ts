@@ -18,6 +18,7 @@ export async function GET(
     .from("bookings")
     .select("*")
     .eq("id", id)
+    .in("source", ["fisher_paykel", "direct"])
     .single();
 
   if (error || !booking) return NextResponse.json({ error: "Not found" }, { status: 404 });
