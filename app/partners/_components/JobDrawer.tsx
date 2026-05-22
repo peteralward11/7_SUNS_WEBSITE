@@ -677,7 +677,14 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
 
               {/* ── Always: Photos ── */}
               <div style={{ marginBottom: 28 }}>
-                <PhotoGallery bookingId={String(booking.id)} photos={photos} isAdmin={isAdmin} />
+                <PhotoGallery
+                  bookingId={String(booking.id)}
+                  photos={photos}
+                  isAdmin={isAdmin}
+                  onPhotosChange={newPhotos =>
+                    setData(d => d ? { ...d, photos: newPhotos } : d)
+                  }
+                />
               </div>
 
               {/* ── Always: Activity log (admin) ── */}

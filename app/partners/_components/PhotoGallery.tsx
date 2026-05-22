@@ -34,12 +34,19 @@ export default function PhotoGallery({
   bookingId,
   photos: initialPhotos,
   isAdmin,
+  onPhotosChange,
 }: {
   bookingId: string;
   photos: Photo[];
   isAdmin: boolean;
+  onPhotosChange?: (photos: Photo[]) => void;
 }) {
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
+
+  function updatePhotos(next: Photo[]) {
+    setPhotos(next);
+    onPhotosChange?.(next);
+  }
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +58,7 @@ export default function PhotoGallery({
     setError(null);
 
     try {
+      let current = [...photos];
       for (const rawFile of Array.from(files)) {
         const file = await compressImage(rawFile);
         const fd = new FormData();
@@ -60,7 +68,8 @@ export default function PhotoGallery({
         let data: { photo?: unknown; error?: string } = {};
         try { data = await res.json(); } catch { data = {}; }
         if (data.photo) {
-          setPhotos(p => [...p, data.photo as Photo]);
+          current = [...current, data.photo as Photo];
+          updatePhotos(current);
         } else {
           setError(data.error ?? `Upload failed (${res.status}) — please try again.`);
         }
@@ -75,7 +84,8 @@ export default function PhotoGallery({
   }
 
   async function deletePhoto(id: string) {
-    setPhotos(p => p.filter(x => x.id !== id));
+    const next = photos.filter(x => x.id !== id);
+    updatePhotos(next);
     await fetch(`/api/partners/photos/${id}`, { method: "DELETE" });
   }
 
