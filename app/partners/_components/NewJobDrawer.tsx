@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const APPLIANCE_TYPES = [
   "Refrigerator / French Door Fridge",
@@ -106,12 +106,22 @@ interface Props {
   customerAddress?: string;
 }
 
+interface CustomerHit { full_name: string; email: string; phone: string | null }
+
 export default function NewJobDrawer({ open, onClose, onCreated, customerName = "", customerEmail = "", customerPhone = "", customerAddress = "" }: Props) {
   const [projectType, setProjectType] = useState<"residential" | "builder">("residential");
   const [fullName, setFullName]       = useState(customerName);
   const [email, setEmail]             = useState(customerEmail);
   const [phone, setPhone]             = useState(customerPhone);
   const [address, setAddress]         = useState(customerAddress);
+
+  // Customer search
+  const [custQuery, setCustQuery]       = useState("");
+  const [custResults, setCustResults]   = useState<CustomerHit[]>([]);
+  const [custLoading, setCustLoading]   = useState(false);
+  const [custOpen, setCustOpen]         = useState(false);
+  const searchRef                       = useRef<HTMLDivElement>(null);
+  const debounceRef                     = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Builder fields
   const [companyName, setCompanyName]           = useState("");
@@ -158,8 +168,47 @@ export default function NewJobDrawer({ open, onClose, onCreated, customerName = 
       setPreferredDate(""); setAlternateDate(""); setTimeWindow("");
       setNotes(""); setAccessNotes(""); setFpOrderNumber("");
       setErrors({}); setApiError(null);
+      setCustQuery(""); setCustResults([]); setCustOpen(false);
     }
   }, [open, customerName, customerEmail, customerPhone, customerAddress]);
+
+  // Debounced customer search
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (custQuery.trim().length < 2) { setCustResults([]); setCustOpen(false); return; }
+    debounceRef.current = setTimeout(async () => {
+      setCustLoading(true);
+      try {
+        const res = await fetch(`/api/partners/customers/search?q=${encodeURIComponent(custQuery.trim())}`);
+        const data = await res.json();
+        setCustResults(data.customers ?? []);
+        setCustOpen(true);
+      } finally {
+        setCustLoading(false);
+      }
+    }, 280);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [custQuery]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function onDown(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setCustOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  function selectCustomer(c: CustomerHit) {
+    setFullName(c.full_name);
+    setEmail(c.email);
+    setPhone(c.phone ?? "");
+    setCustQuery("");
+    setCustResults([]);
+    setCustOpen(false);
+    // Clear any validation errors for these fields
+    setErrors(e => { const n = { ...e }; delete n.fullName; delete n.email; delete n.phone; return n; });
+  }
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
@@ -304,6 +353,60 @@ export default function NewJobDrawer({ open, onClose, onCreated, customerName = 
           <div>
             <SectionTitle>Contact</SectionTitle>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+              {/* Existing customer search */}
+              <div ref={searchRef} style={{ position: "relative" }}>
+                <label style={labelStyle}>Search Existing Customer</label>
+                <div style={{ position: "relative" }}>
+                  <svg style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-3)", pointerEvents: "none" }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input
+                    type="text"
+                    value={custQuery}
+                    onChange={e => setCustQuery(e.target.value)}
+                    onFocus={() => { if (custResults.length > 0) setCustOpen(true); }}
+                    placeholder="Type name or email to search…"
+                    style={{ ...inputStyle, paddingLeft: 30, borderColor: "var(--border)" }}
+                  />
+                  {custLoading && (
+                    <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: "11px", color: "var(--text-3)" }}>…</span>
+                  )}
+                </div>
+                {custOpen && custResults.length > 0 && (
+                  <div style={{
+                    position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+                    backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+                    borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                    zIndex: 200, overflow: "hidden",
+                  }}>
+                    {custResults.map((c, i) => (
+                      <button
+                        key={c.email}
+                        type="button"
+                        onMouseDown={() => selectCustomer(c)}
+                        style={{
+                          width: "100%", textAlign: "left", padding: "10px 14px",
+                          border: "none", borderBottom: i < custResults.length - 1 ? "1px solid var(--hairline)" : "none",
+                          backgroundColor: "transparent", cursor: "pointer",
+                          display: "flex", flexDirection: "column", gap: 2,
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = "var(--hover)")}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text)" }}>{c.full_name}</span>
+                        <span style={{ fontSize: "11px", color: "var(--text-3)" }}>{c.email}{c.phone ? ` · ${c.phone}` : ""}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {custOpen && custResults.length === 0 && !custLoading && custQuery.trim().length >= 2 && (
+                  <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 14px", zIndex: 200 }}>
+                    <span style={{ fontSize: "12px", color: "var(--text-3)" }}>No customers found</span>
+                  </div>
+                )}
+              </div>
+
               <Field label="Full Name" required error={errors.fullName}>
                 <input type="text" value={fullName} onChange={e => { setFullName(e.target.value); clearError("fullName"); }} placeholder="Jane Smith" style={{ ...inputStyle, borderColor: errors.fullName ? "#B44A2C" : undefined }} />
               </Field>
