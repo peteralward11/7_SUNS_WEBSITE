@@ -739,6 +739,8 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange,
         className="fp-drawer"
         style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(560px, 100vw)", backgroundColor: "var(--surface)", borderLeft: "1px solid var(--border)", zIndex: 90, display: "flex", flexDirection: "column" }}
       >
+        {/* Drag handle — mobile only */}
+        <div className="fp-drag-handle" style={{ display: "none", width: 36, height: 4, borderRadius: 2, backgroundColor: "var(--border)", margin: "12px auto 0", flexShrink: 0 }} />
         {/* ── Header ── */}
         <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--hairline)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexShrink: 0, backgroundColor: "var(--surface)" }}>
           <div>

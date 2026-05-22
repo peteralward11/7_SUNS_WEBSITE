@@ -134,7 +134,7 @@ export default function NewCustomerDrawer({
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.45)", zIndex: 80 }} />
 
-      <div style={{
+      <div className="fp-drawer" style={{
         position: "fixed", top: 0, right: 0, bottom: 0,
         width: "min(520px, 100vw)",
         backgroundColor: "var(--surface)",

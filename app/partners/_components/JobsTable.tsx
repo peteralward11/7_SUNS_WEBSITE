@@ -304,6 +304,30 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
           onDelete={(ids) => setJobs(prev => prev.filter(j => !ids.includes(j.id)))}
         />
       )}
+
+      {/* Mobile FAB — New Job */}
+      {isAdmin && (
+        <button
+          className="fp-fab"
+          onClick={() => setNewJobOpen(true)}
+          style={{
+            display: "none",
+            position: "fixed",
+            bottom: "calc(72px + env(safe-area-inset-bottom, 0px))",
+            right: 20,
+            width: 52, height: 52, borderRadius: "50%",
+            backgroundColor: "#E8A33D",
+            border: "none", cursor: "pointer",
+            alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
+            zIndex: 50,
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+      )}
     </>
   );
 }

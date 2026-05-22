@@ -301,7 +301,7 @@ export default function NewJobDrawer({ open, onClose, onCreated, customerName = 
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.45)", zIndex: 100 }} />
 
-      <div style={{
+      <div className="fp-drawer" style={{
         position: "fixed", top: 0, right: 0, bottom: 0,
         width: "min(580px, 100vw)",
         backgroundColor: "var(--surface)",

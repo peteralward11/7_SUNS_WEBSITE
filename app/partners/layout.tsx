@@ -53,6 +53,10 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
           from { transform: scaleY(0); }
           to   { transform: scaleY(1); }
         }
+        @keyframes fp-slide-up {
+          from { transform: translateY(100%); }
+          to   { transform: translateY(0); }
+        }
         .fp-drawer {
           animation: fp-slide-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -66,18 +70,30 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
         /* ── Mobile ── */
         @media (max-width: 768px) {
           .fp-sidebar { display: none !important; }
-          .fp-mobile-topbar { display: flex !important; }
+          .fp-bottom-nav { display: flex !important; }
           .fp-main-grid { grid-template-columns: 1fr !important; }
 
-          /* Offset for fixed 52px topbar */
-          .fp-main-content { padding-top: 52px; }
+          /* Space below content for fixed bottom nav (64px + safe area) */
+          .fp-main-content { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
 
           /* Reduce page padding */
           .fp-page-header { padding: 16px 16px 10px !important; }
           .fp-page-content { padding: 0 16px 32px !important; }
 
-          /* Drawers fill full screen */
-          .fp-drawer { width: 100vw !important; }
+          /* Drawers become full-screen bottom sheets on mobile */
+          .fp-drawer {
+            width: 100vw !important;
+            height: 100dvh !important;
+            top: 0 !important;
+            border-radius: 0 !important;
+            animation: fp-slide-up 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+          }
+
+          /* Drag handle on mobile drawers */
+          .fp-drag-handle { display: block !important; }
+
+          /* Floating action button */
+          .fp-fab { display: flex !important; }
 
           /* Table/cards toggle */
           .fp-table-view { display: none !important; }
@@ -104,7 +120,7 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
           .fp-form-grid-3 { grid-template-columns: 1fr !important; }
         }
         @media (min-width: 769px) {
-          .fp-mobile-topbar { display: none !important; }
+          .fp-bottom-nav { display: none !important; }
           .fp-table-view { display: block !important; }
           .fp-cards-view { display: none !important; }
           .fp-form-grid-2 { grid-template-columns: 1fr 1fr; }
