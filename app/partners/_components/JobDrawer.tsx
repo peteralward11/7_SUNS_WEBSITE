@@ -8,10 +8,16 @@ import SignatureCapture from "./SignatureCapture";
 
 /* ─── Types ─────────────────────────────────────────────── */
 type LineItem = { description: string; amount: string };
-interface Photo   { id: string; url: string; uploaded_by: string | null; created_at: string }
-interface Quote   { id: string; line_items: LineItem[]; total: number; status: string; sent_at?: string | null }
-interface Invoice { id: string; amount: number; status: string; stripe_checkout_url?: string | null; public_token: string; paid_at?: string | null }
-interface Booking { [key: string]: unknown }
+interface Photo      { id: string; url: string; uploaded_by: string | null; created_at: string }
+interface Quote      { id: string; line_items: LineItem[]; total: number; status: string; sent_at?: string | null }
+interface Invoice    { id: string; amount: number; status: string; stripe_checkout_url?: string | null; public_token: string; paid_at?: string | null }
+interface Booking    { [key: string]: unknown }
+interface TeamMember { id: string; name: string; role: string; color: string }
+interface Assignment {
+  id: string; scheduled_date: string; time_start: string; time_end: string;
+  booking_id: string; team_member_id: string;
+  fp_team_members: TeamMember;
+}
 
 /* ─── Stage config ───────────────────────────────────────── */
 const STAGES = [
@@ -67,6 +73,187 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 14px", paddingBottom: 8, borderBottom: "1px solid var(--hairline)" }}>
       {children}
     </p>
+  );
+}
+
+/* ─── Schedule Panel ────────────────────────────────────── */
+function SchedulePanel({ bookingId, preferredDate, onScheduled }: {
+  bookingId: string;
+  preferredDate?: string | null;
+  onScheduled: (newStatus: string) => void;
+}) {
+  const [loading, setLoading]               = useState(true);
+  const [team, setTeam]                     = useState<TeamMember[]>([]);
+  const [assignments, setAssignments]       = useState<Assignment[]>([]);
+  const [rescheduling, setRescheduling]     = useState(false);
+  const [schedDate, setSchedDate]           = useState(() => preferredDate || new Date().toISOString().split("T")[0]);
+  const [schedWindow, setSchedWindow]       = useState("Morning");
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [saving, setSaving]                 = useState(false);
+  const [deletingId, setDeletingId]         = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      const [teamRes, assignRes] = await Promise.all([
+        fetch("/api/partners/team"),
+        fetch(`/api/partners/schedule?booking_id=${bookingId}`),
+      ]);
+      const [teamData, assignData] = await Promise.all([teamRes.json(), assignRes.json()]);
+      setTeam(teamData.members ?? []);
+      setAssignments(assignData.assignments ?? []);
+      setLoading(false);
+    }
+    load();
+  }, [bookingId]);
+
+  async function handleSchedule() {
+    if (!selectedMembers.length || !schedDate || saving) return;
+    setSaving(true);
+    const results = await Promise.all(
+      selectedMembers.map(memberId =>
+        fetch("/api/partners/schedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ booking_id: bookingId, team_member_id: memberId, scheduled_date: schedDate, time_window: schedWindow }),
+        }).then(r => r.json())
+      )
+    );
+    const newAssignments: Assignment[] = results
+      .filter(r => r.assignment)
+      .map(r => ({ ...r.assignment, fp_team_members: team.find(m => m.id === r.assignment.team_member_id)! }));
+    setAssignments(prev => {
+      const newIds = new Set(newAssignments.map(a => a.id));
+      return [...prev.filter(a => !newIds.has(a.id)), ...newAssignments];
+    });
+    setSaving(false);
+    setRescheduling(false);
+    setSelectedMembers([]);
+    onScheduled("scheduled");
+  }
+
+  async function handleDelete(id: string) {
+    setDeletingId(id);
+    await fetch(`/api/partners/schedule/${id}`, { method: "DELETE" });
+    const next = assignments.filter(a => a.id !== id);
+    setAssignments(next);
+    setDeletingId(null);
+    if (next.length === 0) onScheduled("confirmed");
+  }
+
+  function fmtDate(iso: string) {
+    return new Date(iso + "T12:00:00").toLocaleDateString("en-CA", {
+      weekday: "short", month: "short", day: "numeric", year: "numeric",
+    });
+  }
+
+  function fmtWindow(ts: string, te: string) {
+    if (ts === "08:00" && te === "12:00") return "Morning (8am–12pm)";
+    if (ts === "12:00" && te === "16:00") return "Afternoon (12pm–4pm)";
+    return "Anytime (8am–4pm)";
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", padding: "8px 10px", fontSize: "13px",
+    border: "1px solid var(--border)", borderRadius: 6,
+    backgroundColor: "var(--input-bg)", color: "var(--text)",
+    fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+  };
+
+  if (loading) return <p style={{ fontSize: "13px", color: "var(--text-3)", margin: 0 }}>Loading…</p>;
+
+  const showForm = rescheduling || assignments.length === 0;
+
+  return (
+    <div>
+      {/* Existing assignments */}
+      {assignments.length > 0 && !rescheduling && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+          {assignments.map(a => (
+            <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", backgroundColor: "var(--hover)", borderRadius: 8, border: "1px solid var(--border)" }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: a.fp_team_members?.color ?? "#999", flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "var(--text)" }}>{fmtDate(a.scheduled_date)}</p>
+                <p style={{ margin: 0, fontSize: "11px", color: "var(--text-3)" }}>{fmtWindow(a.time_start, a.time_end)} · {a.fp_team_members?.name ?? "—"}</p>
+              </div>
+              <button
+                onClick={() => handleDelete(a.id)}
+                disabled={deletingId === a.id}
+                style={{ background: "none", border: "none", fontSize: "11px", color: "#B44A2C", cursor: "pointer", textDecoration: "underline", padding: "2px 4px" }}
+              >
+                {deletingId === a.id ? "…" : "Remove"}
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => { setRescheduling(true); setSelectedMembers([]); }}
+            style={{ alignSelf: "flex-start", background: "none", border: "none", fontSize: "12px", color: "var(--text-3)", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+          >
+            + Add another assignment
+          </button>
+        </div>
+      )}
+
+      {/* Form */}
+      {showForm && (
+        <div style={{ backgroundColor: "var(--hover)", borderRadius: 10, padding: 16, border: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Date</label>
+              <input type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Time Window</label>
+              <div style={{ display: "flex", gap: 6 }}>
+                {["Morning", "Afternoon", "Anytime"].map(w => (
+                  <button key={w} onClick={() => setSchedWindow(w)} style={{
+                    flex: 1, padding: "7px 4px", borderRadius: 6, fontSize: "11px", fontWeight: 600,
+                    backgroundColor: schedWindow === w ? "var(--text)" : "transparent",
+                    color: schedWindow === w ? "var(--bg)" : "var(--text-3)",
+                    border: "1px solid var(--border)", cursor: "pointer",
+                  }}>{w}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Assign To</label>
+              {team.length === 0 ? (
+                <p style={{ fontSize: "12px", color: "var(--text-3)", margin: 0 }}>No team members yet — add some from the Schedule page.</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {team.map(m => {
+                    const checked = selectedMembers.includes(m.id);
+                    return (
+                      <div
+                        key={m.id}
+                        onClick={() => setSelectedMembers(prev => checked ? prev.filter(id => id !== m.id) : [...prev, m.id])}
+                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 7, border: `1px solid ${checked ? "var(--text)" : "var(--border)"}`, backgroundColor: checked ? "var(--hover)" : "transparent", cursor: "pointer" }}
+                      >
+                        <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: m.color, flexShrink: 0 }} />
+                        <span style={{ fontSize: "13px", fontWeight: checked ? 600 : 400, color: "var(--text)", flex: 1 }}>{m.name}</span>
+                        <span style={{ fontSize: "10px", color: "var(--text-3)", textTransform: "capitalize" }}>{m.role === "both" ? "Driver & Installer" : m.role}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+              {rescheduling && (
+                <button onClick={() => { setRescheduling(false); setSelectedMembers([]); }} style={{ flex: 1, padding: "8px", borderRadius: 6, backgroundColor: "transparent", border: "1px solid var(--border)", color: "var(--text-3)", cursor: "pointer", fontSize: "13px" }}>Cancel</button>
+              )}
+              <button
+                onClick={handleSchedule}
+                disabled={saving || !schedDate || selectedMembers.length === 0}
+                style={{ flex: 2, padding: "8px", borderRadius: 6, backgroundColor: "var(--text)", color: "var(--bg)", border: "none", cursor: (saving || !schedDate || selectedMembers.length === 0) ? "default" : "pointer", fontSize: "13px", fontWeight: 600, opacity: selectedMembers.length === 0 ? 0.5 : 1 }}
+              >
+                {saving ? "Scheduling…" : "Schedule Job"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -619,6 +806,21 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange,
                       setStatus("paid");
                       onStatusChange?.(String(booking.id), "paid");
                       router.refresh();
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* ── Schedule panel (admin, Confirmed+) ── */}
+              {isAdmin && stageIndex >= 2 && stageIndex < 5 && (
+                <div style={{ marginBottom: 28 }}>
+                  <SectionTitle>Schedule</SectionTitle>
+                  <SchedulePanel
+                    bookingId={String(booking.id)}
+                    preferredDate={booking.preferred_date ? String(booking.preferred_date) : null}
+                    onScheduled={(newStatus) => {
+                      setStatus(newStatus);
+                      onStatusChange?.(bookingId!, newStatus);
                     }}
                   />
                 </div>

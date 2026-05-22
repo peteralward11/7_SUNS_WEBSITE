@@ -63,6 +63,17 @@ function IconSun() {
   );
 }
 
+function IconCalendar() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
 function IconUsers() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -229,6 +240,15 @@ export default function PortalSidebar({ isAdmin, userName, userEmail, newJobCoun
           collapsed={collapsed}
           badge={newJobCount > 0 ? newJobCount : undefined}
         />
+        {isAdmin && (
+          <NavLink
+            href="/partners/schedule"
+            label="Schedule"
+            icon={<IconCalendar />}
+            active={pathname.startsWith("/partners/schedule")}
+            collapsed={collapsed}
+          />
+        )}
         {isAdmin && (
           <>
             <div style={{ height: "1px", backgroundColor: "#1E1E1E", margin: collapsed ? "8px 12px" : "8px 20px" }} />
