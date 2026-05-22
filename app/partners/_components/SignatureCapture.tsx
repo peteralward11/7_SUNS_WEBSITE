@@ -13,15 +13,26 @@ export default function SignatureCapture({
 }) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [url, setUrl] = useState<string | null>(initialUrl);
   const canvasRef = useRef<SignatureCanvas>(null);
+
+  function dataUrlToBlob(dataUrl: string): Blob {
+    const [header, data] = dataUrl.split(",");
+    const mime = header.match(/:(.*?);/)![1];
+    const binary = atob(data);
+    const arr = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
 
   async function save() {
     if (!canvasRef.current || canvasRef.current.isEmpty()) return;
     setSaving(true);
+    setSaveError(null);
 
     const dataUrl = canvasRef.current.toDataURL("image/png");
-    const blob = await (await fetch(dataUrl)).blob();
+    const blob = dataUrlToBlob(dataUrl);
     const file = new File([blob], "signature.png", { type: "image/png" });
 
     const fd = new FormData();
@@ -33,9 +44,11 @@ export default function SignatureCapture({
     if (data.url) {
       setUrl(data.url);
       onSaved(data.url);
+      setOpen(false);
+    } else {
+      setSaveError(data.error ?? "Save failed — please try again.");
     }
     setSaving(false);
-    setOpen(false);
   }
 
   return (
@@ -129,6 +142,11 @@ export default function SignatureCapture({
                 penColor="#111111"
               />
             </div>
+            {saveError && (
+              <p style={{ fontSize: "12px", color: "#B44A2C", margin: "8px 0 0", backgroundColor: "#B44A2C18", padding: "8px 10px", borderRadius: 6 }}>
+                {saveError}
+              </p>
+            )}
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button
                 onClick={() => canvasRef.current?.clear()}
