@@ -21,7 +21,12 @@ interface CustomerData {
   full_name: string;
   phone?: string | null;
   address?: string | null;
+  ltv: number;
   jobs: Job[];
+}
+
+function fmtCurrency(n: number) {
+  return new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(n);
 }
 
 function fmt(iso: string) {
@@ -201,16 +206,22 @@ export default function CustomerDrawer({
               </div>
 
               {/* Stats */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 28 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 28 }}>
                 <div style={{ backgroundColor: "var(--hover)", borderRadius: 8, padding: "14px 16px", border: "1px solid var(--border)" }}>
-                  <p style={{ fontSize: "22px", fontWeight: 700, color: "var(--text)", margin: 0 }}>{data.jobs.length}</p>
-                  <p style={{ fontSize: "11px", color: "var(--text-3)", margin: "2px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Jobs</p>
+                  <p style={{ fontSize: "20px", fontWeight: 700, color: "var(--text)", margin: 0 }}>{data.jobs.length}</p>
+                  <p style={{ fontSize: "10px", color: "var(--text-3)", margin: "2px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total Jobs</p>
                 </div>
                 <div style={{ backgroundColor: "var(--hover)", borderRadius: 8, padding: "14px 16px", border: "1px solid var(--border)" }}>
-                  <p style={{ fontSize: "22px", fontWeight: 700, color: "var(--text)", margin: 0 }}>
+                  <p style={{ fontSize: "20px", fontWeight: 700, color: "var(--text)", margin: 0 }}>
                     {data.jobs.filter(j => j.status === "paid").length}
                   </p>
-                  <p style={{ fontSize: "11px", color: "var(--text-3)", margin: "2px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Paid Jobs</p>
+                  <p style={{ fontSize: "10px", color: "var(--text-3)", margin: "2px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Paid Jobs</p>
+                </div>
+                <div style={{ backgroundColor: data.ltv > 0 ? "rgba(30,126,74,0.06)" : "var(--hover)", borderRadius: 8, padding: "14px 16px", border: `1px solid ${data.ltv > 0 ? "rgba(30,126,74,0.2)" : "var(--border)"}` }}>
+                  <p style={{ fontSize: "20px", fontWeight: 700, color: data.ltv > 0 ? "#1E7E4A" : "var(--text)", margin: 0, lineHeight: 1.1 }}>
+                    {data.ltv > 0 ? fmtCurrency(data.ltv) : "—"}
+                  </p>
+                  <p style={{ fontSize: "10px", color: "var(--text-3)", margin: "2px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Lifetime Value</p>
                 </div>
               </div>
 

@@ -29,15 +29,30 @@ export async function GET(
   const { email } = await params;
   const decoded = decodeURIComponent(email);
 
-  const { data: jobs, error } = await adminClient()
-    .from("bookings")
-    .select("id, full_name, email, phone, address, preferred_date, appliances, status, created_at, fp_order_number, archived")
-    .in("source", ["fisher_paykel", "direct"])
-    .ilike("email", decoded)
-    .order("created_at", { ascending: false });
+  const admin = adminClient();
 
-  if (error) return NextResponse.json({ error: "Database error" }, { status: 500 });
-  if (!jobs || jobs.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const [bookingsRes, invoicesRes] = await Promise.all([
+    admin
+      .from("bookings")
+      .select("id, full_name, email, phone, address, preferred_date, appliances, status, created_at, fp_order_number, archived")
+      .in("source", ["fisher_paykel", "direct"])
+      .ilike("email", decoded)
+      .order("created_at", { ascending: false }),
+    admin
+      .from("fp_invoices")
+      .select("booking_id, amount")
+      .eq("status", "paid"),
+  ]);
+
+  if (bookingsRes.error) return NextResponse.json({ error: "Database error" }, { status: 500 });
+  const jobs = bookingsRes.data ?? [];
+  if (jobs.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Sum paid invoices for this customer's bookings
+  const bookingIds = new Set(jobs.map(j => j.id));
+  const ltv = (invoicesRes.data ?? [])
+    .filter(inv => bookingIds.has(inv.booking_id))
+    .reduce((sum, inv) => sum + Number(inv.amount), 0);
 
   const latest = jobs[0];
   const customer = {
@@ -45,6 +60,7 @@ export async function GET(
     full_name: latest.full_name ?? "",
     phone: latest.phone ?? null,
     address: latest.address ?? null,
+    ltv,
     jobs: jobs.filter(j => j.status !== "contact"),
   };
 

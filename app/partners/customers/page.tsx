@@ -19,11 +19,25 @@ export default async function CustomersPage() {
 
   if (!portalUser?.is_admin) redirect("/partners");
 
-  const { data: bookings } = await supabase
-    .from("bookings")
-    .select("id, full_name, email, address, preferred_date, status, created_at, archived, source")
-    .in("source", ["fisher_paykel", "direct"])
-    .order("created_at", { ascending: false });
+  const [bookingsRes, invoicesRes] = await Promise.all([
+    supabase
+      .from("bookings")
+      .select("id, full_name, email, address, preferred_date, status, created_at, archived, source")
+      .in("source", ["fisher_paykel", "direct"])
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("fp_invoices")
+      .select("booking_id, amount")
+      .eq("status", "paid"),
+  ]);
+
+  const bookings = bookingsRes.data ?? [];
+
+  // Build booking_id → paid amount map
+  const paidByBooking = new Map<string, number>();
+  for (const inv of invoicesRes.data ?? []) {
+    paidByBooking.set(inv.booking_id, (paidByBooking.get(inv.booking_id) ?? 0) + Number(inv.amount));
+  }
 
   // Group into customers by email
   const map = new Map<string, {
@@ -33,14 +47,17 @@ export default async function CustomersPage() {
     job_count: number;
     last_job_date: string;
     source: string;
+    ltv: number;
   }>();
 
-  for (const b of bookings ?? []) {
+  for (const b of bookings) {
     const key = (b.email ?? "").toLowerCase();
     if (!key) continue;
+    const paid = paidByBooking.get(b.id) ?? 0;
     const existing = map.get(key);
     if (existing) {
       if (b.status !== "contact") existing.job_count++;
+      existing.ltv += paid;
       if (b.created_at > existing.last_job_date) {
         existing.last_job_date = b.created_at;
         existing.full_name = b.full_name ?? existing.full_name;
@@ -54,6 +71,7 @@ export default async function CustomersPage() {
         job_count: b.status === "contact" ? 0 : 1,
         last_job_date: b.created_at,
         source: b.source ?? "fisher_paykel",
+        ltv: paid,
       });
     }
   }

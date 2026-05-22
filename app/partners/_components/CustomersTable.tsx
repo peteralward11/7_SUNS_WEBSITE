@@ -11,6 +11,11 @@ interface Customer {
   job_count: number;
   last_job_date: string;
   source: string;
+  ltv: number;
+}
+
+function fmtCurrency(n: number) {
+  return new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(n);
 }
 
 function fmt(iso: string) {
@@ -58,6 +63,7 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
       job_count: 0,
       last_job_date: new Date().toISOString(),
       source: "direct",
+      ltv: 0,
     }, ...prev]);
     openCustomer(info.email);
   }
@@ -126,7 +132,7 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--hairline)", backgroundColor: "var(--hover)" }}>
-              {["Name", "Email", "Suburb", "Jobs", "Last Job"].map(h => (
+              {["Name", "Email", "Suburb", "Jobs", "LTV", "Last Job"].map(h => (
                 <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
                   {h}
                 </th>
@@ -190,6 +196,15 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
                     }}>
                       {c.job_count}
                     </span>
+                  </td>
+                  <td style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>
+                    {c.ltv > 0 ? (
+                      <span style={{ fontSize: "13px", fontWeight: 700, color: "#1E7E4A" }}>
+                        {fmtCurrency(c.ltv)}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: "12px", color: "var(--text-3)" }}>—</span>
+                    )}
                   </td>
                   <td style={{ padding: "13px 16px", fontSize: "12px", color: "var(--text-3)", whiteSpace: "nowrap" }}>
                     {fmt(c.last_job_date)}
