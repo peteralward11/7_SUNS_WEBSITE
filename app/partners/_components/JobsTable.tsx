@@ -178,7 +178,7 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
                       onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = isSelected ? `${meta.color}08` : "transparent"; }}
                     >
                       {isAdmin && (
-                        <td style={{ padding: "12px 12px", width: 40 }} onClick={e => { e.stopPropagation(); toggleOne(job.id); }}>
+                        <td style={{ padding: "12px 12px", width: 40 }} onClick={e => e.stopPropagation()}>
                           <input type="checkbox" checked={isSelected} onChange={() => toggleOne(job.id)} style={{ cursor: "pointer" }} />
                         </td>
                       )}
