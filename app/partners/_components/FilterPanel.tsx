@@ -9,6 +9,7 @@ export interface Filters {
   projectType: "all" | "residential" | "builder";
   dateFrom: string;
   dateTo: string;
+  showArchived: boolean;
 }
 
 export const DEFAULT_FILTERS: Filters = {
@@ -16,6 +17,7 @@ export const DEFAULT_FILTERS: Filters = {
   projectType: "all",
   dateFrom: "",
   dateTo: "",
+  showArchived: false,
 };
 
 interface FilterPanelProps {
@@ -39,7 +41,8 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
     filters.statuses.length +
     (filters.projectType !== "all" ? 1 : 0) +
     (filters.dateFrom ? 1 : 0) +
-    (filters.dateTo ? 1 : 0);
+    (filters.dateTo ? 1 : 0) +
+    (filters.showArchived ? 1 : 0);
 
   function toggleStatus(s: string) {
     const next = filters.statuses.includes(s)
@@ -50,6 +53,10 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
 
   function clear() {
     onChange(DEFAULT_FILTERS);
+  }
+
+  function toggleArchived() {
+    onChange({ ...filters, showArchived: !filters.showArchived });
   }
 
   const inputStyle: React.CSSProperties = {
@@ -175,6 +182,27 @@ export default function FilterPanel({ filters, onChange }: FilterPanelProps) {
               <input type="date" style={inputStyle} value={filters.dateFrom} onChange={e => onChange({ ...filters, dateFrom: e.target.value })} />
               <input type="date" style={inputStyle} value={filters.dateTo} onChange={e => onChange({ ...filters, dateTo: e.target.value })} />
             </div>
+          </div>
+
+          {/* Archived */}
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 8px" }}>Archived Jobs</p>
+            <button
+              onClick={toggleArchived}
+              style={{
+                padding: "4px 12px",
+                borderRadius: 99,
+                border: `1px solid ${filters.showArchived ? "var(--text)" : "var(--border)"}`,
+                backgroundColor: filters.showArchived ? "var(--text)" : "transparent",
+                color: filters.showArchived ? "var(--bg)" : "var(--text-2)",
+                fontSize: "11px",
+                fontWeight: filters.showArchived ? 700 : 400,
+                cursor: "pointer",
+                transition: "all 150ms ease",
+              }}
+            >
+              {filters.showArchived ? "Showing archived" : "Show archived"}
+            </button>
           </div>
 
           {/* Clear */}

@@ -56,7 +56,20 @@ export async function PATCH(
 
     if (!portalUser?.is_admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    const { status } = await req.json();
+    const body = await req.json();
+
+    // Archive/unarchive request
+    if ("archived" in body) {
+      const { error } = await supabase
+        .from("bookings")
+        .update({ archived: body.archived })
+        .eq("id", id)
+        .eq("source", "fisher_paykel");
+      if (error) return NextResponse.json({ error: "Database error" }, { status: 500 });
+      return NextResponse.json({ success: true });
+    }
+
+    const { status } = body;
     if (!VALID_STATUSES.includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }

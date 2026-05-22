@@ -53,6 +53,17 @@ function IconSun() {
   );
 }
 
+function IconUsers() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
 function IconChevronLeft() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -201,6 +212,23 @@ export default function PortalSidebar({ isAdmin, userName, userEmail, newJobCoun
           collapsed={collapsed}
           badge={newJobCount > 0 ? newJobCount : undefined}
         />
+        {isAdmin && (
+          <>
+            <div style={{ height: "1px", backgroundColor: "#1E1E1E", margin: collapsed ? "8px 12px" : "8px 20px" }} />
+            {!collapsed && (
+              <p style={{ fontSize: "7pt", fontWeight: 700, letterSpacing: "0.1em", color: "#3A3A3A", textTransform: "uppercase", margin: "8px 20px 4px", userSelect: "none" }}>
+                Customers
+              </p>
+            )}
+            <NavLink
+              href="/partners/customers"
+              label="All Customers"
+              icon={<IconUsers />}
+              active={pathname.startsWith("/partners/customers")}
+              collapsed={collapsed}
+            />
+          </>
+        )}
       </nav>
 
       {/* Footer */}

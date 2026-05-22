@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { StatusBadge, getStatusMeta } from "./PortalShell";
+import { StatusBadge } from "./PortalShell";
 import WorkflowSteps from "./WorkflowSteps";
 import ActivityLog from "./ActivityLog";
 import PhotoGallery from "./PhotoGallery";
@@ -224,6 +224,8 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string>("");
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
+  const [archived, setArchived] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async (id: string) => {
@@ -234,6 +236,7 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
     setData(d);
     setStatus(String(d.booking?.status ?? "pending"));
     setSignatureUrl(String(d.booking?.signature_url ?? "") || null);
+    setArchived(!!d.booking?.archived);
     setLoading(false);
   }, []);
 
@@ -259,6 +262,21 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
     : "";
 
   const showSignature = isAdmin && ["in progress", "completed", "paid"].includes(status);
+  const showArchiveBtn = isAdmin && status === "paid";
+
+  async function archiveJob() {
+    if (!bookingId || archiving) return;
+    setArchiving(true);
+    const next = !archived;
+    setArchived(next);
+    await fetch(`/api/partners/bookings/${bookingId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ archived: next }),
+    });
+    setArchiving(false);
+    if (next) onClose();
+  }
 
   return (
     <>
@@ -315,6 +333,26 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {booking && <StatusBadge status={status} />}
+            {showArchiveBtn && (
+              <button
+                onClick={archiveJob}
+                disabled={archiving}
+                title="Archive this job"
+                style={{
+                  padding: "5px 12px",
+                  backgroundColor: "transparent",
+                  border: "1px solid var(--border)",
+                  borderRadius: 6,
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: "var(--text-3)",
+                  cursor: archiving ? "default" : "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {archiving ? "Archiving…" : archived ? "Unarchive" : "Archive Job"}
+              </button>
+            )}
             <button
               onClick={onClose}
               style={{

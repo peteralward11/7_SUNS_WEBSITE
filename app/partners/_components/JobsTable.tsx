@@ -18,6 +18,7 @@ interface Job {
   created_at: string;
   project_type?: string | null;
   fp_order_number?: string | null;
+  archived?: boolean | null;
 }
 
 export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[]; isAdmin: boolean }) {
@@ -65,7 +66,8 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
       const jobDate = j.preferred_date ?? j.created_at?.slice(0, 10);
       const matchFrom = !filters.dateFrom || jobDate >= filters.dateFrom;
       const matchTo = !filters.dateTo || jobDate <= filters.dateTo;
-      return matchSearch && matchStatus && matchType && matchFrom && matchTo;
+      const matchArchived = filters.showArchived ? true : !j.archived;
+      return matchSearch && matchStatus && matchType && matchFrom && matchTo && matchArchived;
     });
   }, [jobs, search, filters]);
 
