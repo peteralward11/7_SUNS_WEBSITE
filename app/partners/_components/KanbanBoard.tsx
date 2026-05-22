@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { getStatusMeta } from "./PortalShell";
 
 const COLUMNS = ["pending", "quoted", "confirmed", "scheduled", "in progress", "completed", "paid"];
@@ -24,6 +24,10 @@ interface KanbanBoardProps {
 export default function KanbanBoard({ jobs: initialJobs, isAdmin, onJobClick }: KanbanBoardProps) {
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!draggingId) setJobs(initialJobs);
+  }, [initialJobs, draggingId]);
   const [overCol, setOverCol] = useState<string | null>(null);
   const dragJobId = useRef<string>("");
 
