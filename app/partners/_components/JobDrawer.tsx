@@ -188,7 +188,7 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
               <button onClick={() => setShowBuilder(true)} style={{ ...btn(false), width: "auto", padding: "5px 12px", fontSize: "11px" }}>Edit Quote</button>
-              <button onClick={emailQuote} disabled={emailing} style={{ ...btn(true, emailing || emailErr), width: "auto", padding: "5px 12px", fontSize: "11px", backgroundColor: emailErr ? "#B44A2C" : undefined, color: emailErr ? "#fff" : undefined }}>
+              <button onClick={emailQuote} disabled={emailing} style={{ ...btn(true, emailing), ...(emailErr ? { backgroundColor: "#B44A2C", color: "#fff" } : {}), width: "auto", padding: "5px 12px", fontSize: "11px" }}>
                 {emailing ? "Sending…" : emailSent ? "Sent ✓" : emailErr ? "Failed — try again" : "Email Customer"}
               </button>
             </div>
