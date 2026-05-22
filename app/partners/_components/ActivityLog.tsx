@@ -10,11 +10,19 @@ interface ActivityEntry {
   created_at: string;
 }
 
-export default function ActivityLog({ bookingId }: { bookingId: string }) {
+export default function ActivityLog({ bookingId, isAdmin }: { bookingId: string; isAdmin?: boolean }) {
   const [entries, setEntries] = useState<ActivityEntry[]>([]);
   const [note, setNote] = useState("");
   const [posting, setPosting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  async function deleteNote(id: string) {
+    setDeletingId(id);
+    setEntries(e => e.filter(x => x.id !== id));
+    await fetch(`/api/partners/activity?id=${id}`, { method: "DELETE" });
+    setDeletingId(null);
+  }
 
   useEffect(() => {
     fetch(`/api/partners/activity?booking_id=${bookingId}`)
@@ -62,7 +70,7 @@ export default function ActivityLog({ bookingId }: { bookingId: string }) {
           <p style={{ fontSize: "13px", color: "var(--text-3)", margin: 0 }}>No activity yet.</p>
         )}
         {entries.map(e => (
-          <div key={e.id} style={{ display: "flex", gap: 10 }}>
+          <div key={e.id} style={{ display: "flex", gap: 10, opacity: deletingId === e.id ? 0.4 : 1, transition: "opacity 150ms" }}>
             <div style={{
               width: 28,
               height: 28,
@@ -87,6 +95,24 @@ export default function ActivityLog({ bookingId }: { bookingId: string }) {
                 <span style={{ fontSize: "11px", color: "var(--text-3)" }}>
                   {formatTime(e.created_at)}
                 </span>
+                {isAdmin && e.type === "note" && (
+                  <button
+                    onClick={() => deleteNote(e.id)}
+                    title="Delete note"
+                    style={{
+                      marginLeft: "auto",
+                      backgroundColor: "transparent",
+                      border: "none",
+                      color: "var(--text-3)",
+                      fontSize: "11px",
+                      cursor: "pointer",
+                      padding: "0 4px",
+                      lineHeight: 1,
+                    }}
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
               <p style={{ fontSize: "13px", color: "var(--text-2)", margin: "2px 0 0", lineHeight: 1.4 }}>
                 {e.content}

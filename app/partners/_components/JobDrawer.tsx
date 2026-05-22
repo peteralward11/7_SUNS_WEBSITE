@@ -452,7 +452,7 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
               {/* Activity log (admin only) */}
               {isAdmin && (
                 <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--hairline)" }}>
-                  <ActivityLog bookingId={String(booking.id)} />
+                  <ActivityLog bookingId={String(booking.id)} isAdmin={isAdmin} />
                 </div>
               )}
             </>
