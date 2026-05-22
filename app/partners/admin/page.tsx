@@ -122,10 +122,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 6px" }}>
           Admin
         </p>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text)", margin: 0, lineHeight: 1.2 }}>
-            Dashboard
-          </h1>
+        <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text)", margin: "0 0 16px", lineHeight: 1.2 }}>
+          Dashboard
+        </h1>
+        <div style={{ marginBottom: 28 }}>
           <MonthPicker value={monthStr} />
         </div>
 
