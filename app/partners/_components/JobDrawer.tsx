@@ -82,6 +82,7 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
   const [copied, setCopied]       = useState(false);
   const [emailing, setEmailing]   = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [emailErr, setEmailErr]   = useState(false);
 
   const total = lineItems.reduce((s, li) => s + (parseFloat(li.amount) || 0), 0);
   function updateLine(i: number, f: keyof LineItem, v: string) {
@@ -121,10 +122,16 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
   async function emailQuote() {
     if (!quote || emailing) return;
     setEmailing(true);
-    await fetch(`/api/partners/quotes/${quote.id}/email`, { method: "POST" });
+    setEmailErr(false);
+    const res = await fetch(`/api/partners/quotes/${quote.id}/email`, { method: "POST" });
     setEmailing(false);
-    setEmailSent(true);
-    setTimeout(() => setEmailSent(false), 3000);
+    if (res.ok) {
+      setEmailSent(true);
+      setTimeout(() => setEmailSent(false), 3000);
+    } else {
+      setEmailErr(true);
+      setTimeout(() => setEmailErr(false), 4000);
+    }
   }
 
   const inputStyle: React.CSSProperties = {
@@ -181,8 +188,8 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
               <button onClick={() => setShowBuilder(true)} style={{ ...btn(false), width: "auto", padding: "5px 12px", fontSize: "11px" }}>Edit Quote</button>
-              <button onClick={emailQuote} disabled={emailing} style={{ ...btn(true, emailing), width: "auto", padding: "5px 12px", fontSize: "11px" }}>
-                {emailing ? "Sending…" : emailSent ? "Sent ✓" : "Email Customer"}
+              <button onClick={emailQuote} disabled={emailing} style={{ ...btn(true, emailing || emailErr), width: "auto", padding: "5px 12px", fontSize: "11px", backgroundColor: emailErr ? "#B44A2C" : undefined, color: emailErr ? "#fff" : undefined }}>
+                {emailing ? "Sending…" : emailSent ? "Sent ✓" : emailErr ? "Failed — try again" : "Email Customer"}
               </button>
             </div>
           </>
