@@ -431,7 +431,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { target: 15, suffix: "+", label: "Years in business", sub: "Founded 2009" },
-              { target: 100, suffix: "K+", label: "Deliveries completed", sub: "Across Ontario" },
+              { target: 400, suffix: "K+", label: "Deliveries completed", sub: "Across Ontario" },
               { target: 25, suffix: "+", label: "Builder partners", sub: "Trusted by the best" },
             ].map(({ target, suffix, label, sub }, i) => (
               <div key={label}

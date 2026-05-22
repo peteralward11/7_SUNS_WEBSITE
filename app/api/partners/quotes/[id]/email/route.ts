@@ -104,9 +104,9 @@ export async function POST(
 
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { error: sendErr } = await resend.emails.send({
-    from: "7 Suns Appliances <noreply@7suns.ca>",
+    from: "7 Suns Delivery and Logistics <noreply@7suns.ca>",
     to: booking.email,
-    subject: `Your quote from 7 Suns Appliances — ${fmt(quote.total)}`,
+    subject: `Your quote from 7 Suns Delivery and Logistics — ${fmt(quote.total)}`,
     html,
   });
 

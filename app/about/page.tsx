@@ -308,7 +308,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { target: 15, suffix: "+", label: "Years In Business", sub: "Founded 2009" },
-              { target: 100, suffix: "K+", label: "Deliveries Completed", sub: "Across Ontario" },
+              { target: 400, suffix: "K+", label: "Deliveries Completed", sub: "Across Ontario" },
               { target: 25, suffix: "+", label: "Builder Partners", sub: "Trusted By The Best" },
             ].map(({ target, suffix, label, sub }, i) => (
               <div
