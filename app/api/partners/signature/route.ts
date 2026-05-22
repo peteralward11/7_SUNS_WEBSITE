@@ -41,11 +41,14 @@ export async function POST(req: NextRequest) {
   const { data: urlData } = admin.storage.from("JOB SIGNATURES").getPublicUrl(path);
   const url = urlData.publicUrl;
 
-  const { error } = await supabase
+  const { error } = await admin
     .from("bookings")
     .update({ signature_url: url })
     .eq("id", bookingId);
 
-  if (error) return NextResponse.json({ error: "Database error" }, { status: 500 });
+  if (error) {
+    console.error("[signature] db update error:", error);
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
+  }
   return NextResponse.json({ url });
 }

@@ -31,24 +31,31 @@ export default function SignatureCapture({
     setSaving(true);
     setSaveError(null);
 
-    const dataUrl = canvasRef.current.toDataURL("image/png");
-    const blob = dataUrlToBlob(dataUrl);
-    const file = new File([blob], "signature.png", { type: "image/png" });
+    try {
+      const dataUrl = canvasRef.current.toDataURL("image/png");
+      const blob = dataUrlToBlob(dataUrl);
+      const file = new File([blob], "signature.png", { type: "image/png" });
 
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("booking_id", bookingId);
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("booking_id", bookingId);
 
-    const res = await fetch("/api/partners/signature", { method: "POST", body: fd });
-    const data = await res.json();
-    if (data.url) {
-      setUrl(data.url);
-      onSaved(data.url);
-      setOpen(false);
-    } else {
-      setSaveError(data.error ?? "Save failed — please try again.");
+      const res = await fetch("/api/partners/signature", { method: "POST", body: fd });
+      let data: { url?: string; error?: string } = {};
+      try { data = await res.json(); } catch { data = {}; }
+
+      if (data.url) {
+        setUrl(data.url);
+        onSaved(data.url);
+        setOpen(false);
+      } else {
+        setSaveError(data.error ?? `Save failed (${res.status}) — please try again.`);
+      }
+    } catch {
+      setSaveError("Network error — please check your connection and try again.");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   return (
