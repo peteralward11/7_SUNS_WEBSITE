@@ -15,6 +15,9 @@ export default function ActivityLog({ bookingId, isAdmin }: { bookingId: string;
   const [note, setNote] = useState("");
   const [posting, setPosting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [savingId, setSavingId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   async function deleteNote(id: string) {
@@ -22,6 +25,34 @@ export default function ActivityLog({ bookingId, isAdmin }: { bookingId: string;
     setEntries(e => e.filter(x => x.id !== id));
     await fetch(`/api/partners/activity?id=${id}`, { method: "DELETE" });
     setDeletingId(null);
+  }
+
+  function startEdit(entry: ActivityEntry) {
+    setEditingId(entry.id);
+    setEditContent(entry.content);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditContent("");
+  }
+
+  async function saveEdit(id: string) {
+    if (!editContent.trim() || savingId) return;
+    setSavingId(id);
+    setEntries(e => e.map(x => x.id === id ? { ...x, content: editContent.trim() } : x));
+    setEditingId(null);
+    const res = await fetch(`/api/partners/activity?id=${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: editContent.trim() }),
+    });
+    const data = await res.json();
+    if (data.entry) {
+      setEntries(e => e.map(x => x.id === id ? data.entry : x));
+    }
+    setSavingId(null);
+    setEditContent("");
   }
 
   useEffect(() => {
@@ -94,27 +125,103 @@ export default function ActivityLog({ bookingId, isAdmin }: { bookingId: string;
                   {formatTime(e.created_at)}
                 </span>
                 {isAdmin && e.type === "note" && (
-                  <button
-                    onClick={() => deleteNote(e.id)}
-                    title="Delete note"
-                    style={{
-                      marginLeft: "auto",
-                      backgroundColor: "transparent",
-                      border: "none",
-                      color: "var(--text-3)",
-                      fontSize: "11px",
-                      cursor: "pointer",
-                      padding: "0 4px",
-                      lineHeight: 1,
-                    }}
-                  >
-                    Delete
-                  </button>
+                  <div style={{ marginLeft: "auto", display: "flex", gap: 2 }}>
+                    <button
+                      onClick={() => startEdit(e)}
+                      title="Edit note"
+                      style={{
+                        backgroundColor: "transparent",
+                        border: "none",
+                        color: "var(--text-3)",
+                        fontSize: "11px",
+                        cursor: "pointer",
+                        padding: "0 4px",
+                        lineHeight: 1,
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteNote(e.id)}
+                      title="Delete note"
+                      style={{
+                        backgroundColor: "transparent",
+                        border: "none",
+                        color: "var(--text-3)",
+                        fontSize: "11px",
+                        cursor: "pointer",
+                        padding: "0 4px",
+                        lineHeight: 1,
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 )}
               </div>
-              <p style={{ fontSize: "13px", color: "var(--text-2)", margin: "2px 0 0", lineHeight: 1.4 }}>
-                {e.content}
-              </p>
+              {editingId === e.id ? (
+                <div style={{ marginTop: 4, display: "flex", flexDirection: "column", gap: 6 }}>
+                  <textarea
+                    value={editContent}
+                    onChange={ev => setEditContent(ev.target.value)}
+                    onKeyDown={ev => {
+                      if (ev.key === "Enter" && (ev.metaKey || ev.ctrlKey)) saveEdit(e.id);
+                      if (ev.key === "Escape") cancelEdit();
+                    }}
+                    rows={2}
+                    autoFocus
+                    style={{
+                      resize: "none",
+                      border: "1px solid var(--border)",
+                      borderRadius: 6,
+                      padding: "6px 8px",
+                      fontSize: "13px",
+                      backgroundColor: "var(--input-bg)",
+                      color: "var(--text)",
+                      fontFamily: "inherit",
+                      outline: "none",
+                      width: "100%",
+                    }}
+                  />
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button
+                      onClick={() => saveEdit(e.id)}
+                      disabled={!editContent.trim()}
+                      style={{
+                        padding: "4px 12px",
+                        backgroundColor: editContent.trim() ? "#111111" : "var(--border)",
+                        color: editContent.trim() ? "#FFFFFF" : "var(--text-3)",
+                        border: "none",
+                        borderRadius: 5,
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        cursor: editContent.trim() ? "pointer" : "default",
+                      }}
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      style={{
+                        padding: "4px 12px",
+                        backgroundColor: "transparent",
+                        color: "var(--text-3)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 5,
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p style={{ fontSize: "13px", color: "var(--text-2)", margin: "2px 0 0", lineHeight: 1.4 }}>
+                  {e.content}
+                </p>
+              )}
             </div>
           </div>
         ))}
