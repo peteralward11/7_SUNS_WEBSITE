@@ -50,10 +50,11 @@ export async function POST(
   }
 
   if (invoice.booking_id) {
-    await admin
+    const { error: bookingError } = await admin
       .from("bookings")
       .update({ status: "paid" })
       .eq("id", invoice.booking_id);
+    if (bookingError) console.error("[invoices/pay] booking update failed:", bookingError);
   }
 
   return NextResponse.json({ success: true });

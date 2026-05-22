@@ -28,13 +28,12 @@ export async function POST(req: NextRequest) {
     const { booking_id, invoice_id } = session.metadata ?? {};
 
     if (booking_id && invoice_id) {
-      /* Use service-role client to bypass RLS for webhook updates */
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
 
-      await Promise.all([
+      const [invRes, bookRes] = await Promise.all([
         supabase
           .from("fp_invoices")
           .update({
@@ -49,6 +48,9 @@ export async function POST(req: NextRequest) {
           .update({ status: "paid" })
           .eq("id", booking_id),
       ]);
+
+      if (invRes.error)  console.error("[stripe/webhook] invoice update failed:", invRes.error);
+      if (bookRes.error) console.error("[stripe/webhook] booking update failed:", bookRes.error);
     }
   }
 

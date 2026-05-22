@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { StatusBadge } from "./PortalShell";
 import ActivityLog from "./ActivityLog";
 import PhotoGallery from "./PhotoGallery";
@@ -70,9 +71,10 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 /* ─── Quote / Invoice Panel ─────────────────────────────── */
-function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice: i0, invoiceUrl: u0 }: {
+function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice: i0, invoiceUrl: u0, onPaid }: {
   bookingId: string; customerEmail: string; customerName: string;
   quote: Quote | null; invoice: Invoice | null; invoiceUrl: string | null;
+  onPaid?: () => void;
 }) {
   const [quote, setQuote]         = useState<Quote | null>(q0);
   const [invoice, setInvoice]     = useState<Invoice | null>(i0);
@@ -131,9 +133,12 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
   async function markInvoicePaid() {
     if (!invoice || paying) return;
     setPaying(true);
-    await fetch(`/api/partners/invoices/${invoice.public_token}/pay`, { method: "POST" });
+    const res = await fetch(`/api/partners/invoices/${invoice.public_token}/pay`, { method: "POST" });
     setPaying(false);
-    setInvoice(prev => prev ? { ...prev, status: "paid", paid_at: new Date().toISOString() } : null);
+    if (res.ok) {
+      setInvoice(prev => prev ? { ...prev, status: "paid", paid_at: new Date().toISOString() } : null);
+      onPaid?.();
+    }
   }
 
   const total = lineItems.reduce((s, li) => s + (parseFloat(li.amount) || 0), 0);
@@ -407,6 +412,7 @@ interface DrawerProps {
 }
 
 export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange }: DrawerProps) {
+  const router = useRouter();
   const [data, setData]           = useState<{ booking: Booking; photos: Photo[]; quote: Quote | null; invoice: Invoice | null; invoiceUrl: string | null } | null>(null);
   const [loading, setLoading]     = useState(false);
   const [status, setStatus]       = useState<string>("pending");
@@ -416,6 +422,8 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
   const [advancing, setAdvancing] = useState(false);
   const [blockWarning, setBlockWarning] = useState<string | null>(null);
   const [checklist, setChecklist] = useState<Record<ChecklistKey, boolean>>({ areaClean: false, appliancesTested: false, packagingRemoved: false });
+  const [invoiceStatus, setInvoiceStatus] = useState<string | null>(null);
+  const [markingPaid, setMarkingPaid] = useState(false);
 
   const load = useCallback(async (id: string) => {
     setLoading(true);
@@ -428,6 +436,7 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
     setStatus(String(d.booking?.status ?? "pending"));
     setSignatureUrl(String(d.booking?.signature_url ?? "") || null);
     setArchived(!!d.booking?.archived);
+    setInvoiceStatus(d.invoice?.status ?? null);
     setLoading(false);
   }, []);
 
@@ -604,6 +613,11 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
                     quote={data.quote}
                     invoice={data.invoice}
                     invoiceUrl={data.invoiceUrl}
+                    onPaid={() => {
+                      setStatus("paid");
+                      onStatusChange?.(String(booking.id), "paid");
+                      router.refresh();
+                    }}
                   />
                 </div>
               )}
@@ -661,16 +675,37 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
                   <SectionTitle>Invoice</SectionTitle>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                     <span style={{ fontSize: "24px", fontWeight: 700, color: "var(--text)" }}>{fmt(data.invoice.amount)}</span>
-                    <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", color: data.invoice.status === "paid" ? "#1E7E4A" : "#3F4A5C", backgroundColor: data.invoice.status === "paid" ? "#1E7E4A22" : "#3F4A5C22", padding: "3px 8px", borderRadius: 99 }}>
-                      {data.invoice.status}
+                    <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", color: invoiceStatus === "paid" ? "#1E7E4A" : "#3F4A5C", backgroundColor: invoiceStatus === "paid" ? "#1E7E4A22" : "#3F4A5C22", padding: "3px 8px", borderRadius: 99 }}>
+                      {invoiceStatus ?? data.invoice.status}
                     </span>
                   </div>
-                  {data.invoice.paid_at && <p style={{ fontSize: "12px", color: "#1E7E4A", margin: "0 0 8px" }}>Paid {new Date(data.invoice.paid_at).toLocaleDateString("en-CA")}</p>}
+                  {invoiceStatus !== "paid" && (
+                    <button
+                      onClick={async () => {
+                        if (markingPaid) return;
+                        setMarkingPaid(true);
+                        const res = await fetch(`/api/partners/invoices/${data.invoice!.public_token}/pay`, { method: "POST" });
+                        setMarkingPaid(false);
+                        if (res.ok) {
+                          setInvoiceStatus("paid");
+                          setStatus("paid");
+                          onStatusChange?.(bookingId!, "paid");
+                          router.refresh();
+                        }
+                      }}
+                      disabled={markingPaid}
+                      style={{ padding: "6px 14px", backgroundColor: "var(--hover)", border: "1px solid var(--border)", borderRadius: 6, fontSize: "12px", fontWeight: 600, color: "var(--text-2)", cursor: markingPaid ? "default" : "pointer", marginBottom: 8 }}
+                    >
+                      {markingPaid ? "Marking…" : "Mark as Paid"}
+                    </button>
+                  )}
                   {data.invoiceUrl && (
-                    <a href={`/api/partners/pdf/invoice/${data.invoice.public_token}`} target="_blank" rel="noopener noreferrer"
-                      style={{ display: "inline-block", padding: "7px 16px", backgroundColor: "var(--hover)", border: "1px solid var(--border)", borderRadius: 6, fontSize: "12px", color: "var(--text-2)", textDecoration: "none", fontWeight: 600, marginTop: 4 }}>
-                      Download Invoice PDF
-                    </a>
+                    <div>
+                      <a href={`/api/partners/pdf/invoice/${data.invoice.public_token}`} target="_blank" rel="noopener noreferrer"
+                        style={{ display: "inline-block", padding: "7px 16px", backgroundColor: "var(--hover)", border: "1px solid var(--border)", borderRadius: 6, fontSize: "12px", color: "var(--text-2)", textDecoration: "none", fontWeight: 600, marginTop: 4 }}>
+                        Download Invoice PDF
+                      </a>
+                    </div>
                   )}
                 </div>
               )}
