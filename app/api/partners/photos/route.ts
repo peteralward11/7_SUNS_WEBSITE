@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   const { data: urlData } = admin.storage.from("JOB-PHOTOS").getPublicUrl(path);
   const url = urlData.publicUrl;
 
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from("fp_job_photos")
     .insert({ booking_id: bookingId, url, uploaded_by: user.email })
     .select()
