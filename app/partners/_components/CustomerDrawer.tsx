@@ -42,15 +42,23 @@ export default function CustomerDrawer({
   email,
   onClose,
   onJobClick,
+  onDeleted,
 }: {
   email: string | null;
   onClose: () => void;
   onJobClick: (id: string) => void;
+  onDeleted?: (email: string) => void;
 }) {
   const router = useRouter();
   const [data, setData] = useState<CustomerData | null>(null);
   const [loading, setLoading] = useState(false);
   const [newJobOpen, setNewJobOpen] = useState(false);
+  const [deleteState, setDeleteState] = useState<"idle" | "confirm" | "deleting">("idle");
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editAddress, setEditAddress] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async (e: string) => {
     setLoading(true);
@@ -75,6 +83,14 @@ export default function CustomerDrawer({
     setNewJobOpen(false);
     onClose();
     onJobClick(bookingId);
+  }
+
+  async function handleDelete() {
+    if (!email) return;
+    setDeleteState("deleting");
+    await fetch(`/api/partners/customers/${encodeURIComponent(email)}`, { method: "DELETE" });
+    onDeleted?.(email);
+    onClose();
   }
 
   if (!email) return null;
@@ -226,7 +242,7 @@ export default function CustomerDrawer({
               </div>
 
               {/* Job history */}
-              <div>
+              <div style={{ marginBottom: 28 }}>
                 <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 12px", paddingBottom: 8, borderBottom: "1px solid var(--hairline)" }}>
                   Job History ({data.jobs.length})
                 </p>
@@ -267,6 +283,37 @@ export default function CustomerDrawer({
                       </div>
                     ))}
                   </div>
+                )}
+              </div>
+              {/* Danger zone */}
+              <div style={{ paddingTop: 16, borderTop: "1px solid var(--hairline)" }}>
+                {deleteState === "idle" && (
+                  <button
+                    onClick={() => setDeleteState("confirm")}
+                    style={{ background: "none", border: "none", padding: 0, fontSize: "12px", color: "#B44A2C", cursor: "pointer", textDecoration: "underline" }}
+                  >
+                    Delete customer…
+                  </button>
+                )}
+                {deleteState === "confirm" && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: "12px", color: "var(--text-2)" }}>Delete all jobs and data for this customer?</span>
+                    <button
+                      onClick={handleDelete}
+                      style={{ padding: "4px 12px", backgroundColor: "#B44A2C", border: "none", borderRadius: 6, fontSize: "11px", fontWeight: 600, color: "#fff", cursor: "pointer" }}
+                    >
+                      Yes, Delete
+                    </button>
+                    <button
+                      onClick={() => setDeleteState("idle")}
+                      style={{ padding: "4px 10px", backgroundColor: "transparent", border: "1px solid var(--border)", borderRadius: 6, fontSize: "11px", color: "var(--text-3)", cursor: "pointer" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+                {deleteState === "deleting" && (
+                  <span style={{ fontSize: "12px", color: "var(--text-3)" }}>Deleting…</span>
                 )}
               </div>
             </>

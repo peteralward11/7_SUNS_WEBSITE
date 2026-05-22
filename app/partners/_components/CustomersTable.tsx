@@ -216,7 +216,15 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
         </table>
       </div>
 
-      <CustomerDrawer email={activeEmail} onClose={closeCustomer} onJobClick={openJob} />
+      <CustomerDrawer
+        email={activeEmail}
+        onClose={closeCustomer}
+        onJobClick={openJob}
+        onDeleted={(deletedEmail) => {
+          setCustomers(prev => prev.filter(c => c.email.toLowerCase() !== deletedEmail.toLowerCase()));
+          closeCustomer();
+        }}
+      />
       <NewCustomerDrawer open={newOpen} onClose={() => setNewOpen(false)} onCreated={handleCreated} />
     </>
   );

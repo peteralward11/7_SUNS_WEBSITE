@@ -4,6 +4,8 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { PortalFooter, StatusBadge } from "../../_components/PortalShell";
 import PortalPageShell from "../../_components/PortalPageShell";
+import DeleteCustomerButton from "./_DeleteCustomerButton";
+import EditCustomerForm from "./_EditCustomerForm";
 
 export const dynamic = "force-dynamic";
 
@@ -80,10 +82,13 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
           }}>
             {latest.full_name?.[0]?.toUpperCase() ?? "?"}
           </div>
-          <div>
-            <h1 style={{ fontSize: "24px", fontWeight: 700, color: "var(--text)", margin: "0 0 4px" }}>{latest.full_name}</h1>
-            <p style={{ fontSize: "13px", color: "var(--text-3)", margin: 0 }}>{email}</p>
-            {latest.phone && <p style={{ fontSize: "13px", color: "var(--text-2)", margin: "2px 0 0" }}>{latest.phone}</p>}
+          <div style={{ flex: 1 }}>
+            <EditCustomerForm
+              email={email}
+              initialName={latest.full_name ?? ""}
+              initialPhone={latest.phone ?? ""}
+              initialAddress={latest.address ?? ""}
+            />
           </div>
         </div>
 
@@ -147,6 +152,10 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
               </Link>
             ))}
           </div>
+        </div>
+        {/* Danger zone */}
+        <div style={{ marginTop: 40, paddingTop: 16, borderTop: "1px solid var(--hairline)" }}>
+          <DeleteCustomerButton email={email} />
         </div>
       </div>
 

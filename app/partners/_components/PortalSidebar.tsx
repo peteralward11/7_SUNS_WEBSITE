@@ -14,6 +14,16 @@ function IconBriefcase() {
   );
 }
 
+function IconBarChart() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  );
+}
+
 function IconSettings() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -193,7 +203,14 @@ export default function PortalSidebar({ isAdmin, userName, userEmail, newJobCoun
               href="/partners/admin"
               label="Dashboard"
               icon={<IconSettings />}
-              active={pathname.startsWith("/partners/admin")}
+              active={pathname === "/partners/admin"}
+              collapsed={collapsed}
+            />
+            <NavLink
+              href="/partners/reports"
+              label="Reports"
+              icon={<IconBarChart />}
+              active={pathname === "/partners/reports"}
               collapsed={collapsed}
             />
             <div style={{ height: "1px", backgroundColor: "#1E1E1E", margin: collapsed ? "8px 12px" : "8px 20px" }} />
