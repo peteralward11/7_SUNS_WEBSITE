@@ -171,23 +171,36 @@ export default function PortalSidebar({ isAdmin, userName, userEmail, newJobCoun
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: "8px 0" }}>
+        {isAdmin && (
+          <>
+            {!collapsed && (
+              <p style={{ fontSize: "7pt", fontWeight: 700, letterSpacing: "0.1em", color: "#3A3A3A", textTransform: "uppercase", margin: "8px 20px 4px", userSelect: "none" }}>
+                Admin
+              </p>
+            )}
+            <NavLink
+              href="/partners/admin"
+              label="Dashboard"
+              icon={<IconSettings />}
+              active={pathname.startsWith("/partners/admin")}
+              collapsed={collapsed}
+            />
+            <div style={{ height: "1px", backgroundColor: "#1E1E1E", margin: collapsed ? "8px 12px" : "8px 20px" }} />
+          </>
+        )}
+        {!collapsed && (
+          <p style={{ fontSize: "7pt", fontWeight: 700, letterSpacing: "0.1em", color: "#3A3A3A", textTransform: "uppercase", margin: "8px 20px 4px", userSelect: "none" }}>
+            Jobs
+          </p>
+        )}
         <NavLink
           href="/partners"
-          label="Jobs"
+          label="All Jobs"
           icon={<IconBriefcase />}
           active={pathname === "/partners"}
           collapsed={collapsed}
           badge={newJobCount > 0 ? newJobCount : undefined}
         />
-        {isAdmin && (
-          <NavLink
-            href="/partners/admin"
-            label="Admin"
-            icon={<IconSettings />}
-            active={pathname.startsWith("/partners/admin")}
-            collapsed={collapsed}
-          />
-        )}
       </nav>
 
       {/* Footer */}
