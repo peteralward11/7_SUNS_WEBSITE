@@ -75,7 +75,7 @@ export default async function PublicInvoicePage({ params }: { params: Promise<{ 
                   Invoice
                 </p>
                 <h1 style={{ fontSize: "26px", fontWeight: 700, color: "#111111", margin: "0 0 4px" }}>
-                  {booking?.full_name}
+                  7 Suns Delivery and Logistics
                 </h1>
                 <p style={{ fontSize: "14px", color: "#5A5A5A", margin: 0 }}>
                   Fisher &amp; Paykel Order #{booking?.fp_order_number ?? "—"}

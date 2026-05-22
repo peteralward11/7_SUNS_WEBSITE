@@ -76,12 +76,10 @@ export async function GET(
         ),
       ),
       // Customer
-      booking ? React.createElement(View, { style: styles.section },
+      React.createElement(View, { style: styles.section },
         React.createElement(Text, { style: styles.label }, "Bill To"),
-        React.createElement(Text, { style: styles.value }, String(booking.full_name ?? "")),
-        booking.email ? React.createElement(Text, { style: { fontSize: 11, color: "#5A5A5A" } }, String(booking.email)) : null,
-        booking.address ? React.createElement(Text, { style: { fontSize: 11, color: "#5A5A5A" } }, String(booking.address)) : null,
-      ) : null,
+        React.createElement(Text, { style: styles.value }, "7 Suns Delivery and Logistics"),
+      ),
       // Line items
       React.createElement(View, { style: styles.section },
         React.createElement(Text, { style: styles.label }, "Services"),
