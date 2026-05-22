@@ -8,6 +8,28 @@ interface Photo {
   created_at: string;
 }
 
+async function compressImage(file: File, maxPx = 2048, quality = 0.85): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width <= maxPx && height <= maxPx) { resolve(file); return; }
+      if (width > height) { height = Math.round(height * maxPx / width); width = maxPx; }
+      else { width = Math.round(width * maxPx / height); height = maxPx; }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => {
+        resolve(blob ? new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" }) : file);
+      }, "image/jpeg", quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
 export default function PhotoGallery({
   bookingId,
   photos: initialPhotos,
@@ -29,7 +51,8 @@ export default function PhotoGallery({
     setError(null);
 
     try {
-      for (const file of Array.from(files)) {
+      for (const rawFile of Array.from(files)) {
+        const file = await compressImage(rawFile);
         const fd = new FormData();
         fd.append("file", file);
         fd.append("booking_id", bookingId);

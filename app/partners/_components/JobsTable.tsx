@@ -24,7 +24,7 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [jobs] = useState<Job[]>(initialJobs);
+  const [jobs, setJobs] = useState<Job[]>(initialJobs);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [view, setView] = useState<"table" | "kanban">("table");
@@ -217,7 +217,14 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
         </div>
       )}
 
-      <JobDrawer bookingId={activeJobId} isAdmin={isAdmin} onClose={closeJob} />
+      <JobDrawer
+        bookingId={activeJobId}
+        isAdmin={isAdmin}
+        onClose={closeJob}
+        onStatusChange={(id, newStatus) =>
+          setJobs(prev => prev.map(j => j.id === id ? { ...j, status: newStatus } : j))
+        }
+      />
 
       {isAdmin && (
         <BulkActionBar

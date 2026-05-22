@@ -216,9 +216,10 @@ interface DrawerProps {
   bookingId: string | null;
   isAdmin: boolean;
   onClose: () => void;
+  onStatusChange?: (id: string, status: string) => void;
 }
 
-export default function JobDrawer({ bookingId, isAdmin, onClose }: DrawerProps) {
+export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange }: DrawerProps) {
   const [data, setData] = useState<{ booking: Booking; photos: Photo[]; quote: Quote | null; invoice: Invoice | null; invoiceUrl: string | null } | null>(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string>("");
@@ -338,8 +339,14 @@ export default function JobDrawer({ bookingId, isAdmin, onClose }: DrawerProps) 
         {/* Body */}
         <div style={{ flex: 1, padding: 24, overflowY: "auto" }}>
           {loading && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 200, color: "var(--text-3)" }}>
-              Loading…
+            <div style={{ animation: "fp-fade-in 150ms ease" }}>
+              {[100, 60, 80, 100, 45, 70].map((w, i) => (
+                <div key={i} style={{ height: i % 3 === 0 ? 14 : 11, width: `${w}%`, borderRadius: 4, backgroundColor: "var(--border)", marginBottom: i % 3 === 2 ? 24 : 8, opacity: 0.6 + i * 0.05 }} />
+              ))}
+              <div style={{ height: 1, backgroundColor: "var(--hairline)", margin: "8px 0 24px" }} />
+              {[55, 90, 40, 75, 100, 60].map((w, i) => (
+                <div key={i} style={{ height: 11, width: `${w}%`, borderRadius: 4, backgroundColor: "var(--border)", marginBottom: i % 2 === 1 ? 20 : 8, opacity: 0.5 }} />
+              ))}
             </div>
           )}
 
@@ -352,7 +359,10 @@ export default function JobDrawer({ bookingId, isAdmin, onClose }: DrawerProps) 
                     bookingId={String(booking.id)}
                     currentStatus={status}
                     isAdmin={isAdmin}
-                    onStatusChange={setStatus}
+                    onStatusChange={(s) => {
+                      setStatus(s);
+                      if (bookingId) onStatusChange?.(bookingId, s);
+                    }}
                   />
                 </div>
               )}
