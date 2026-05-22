@@ -409,9 +409,10 @@ interface DrawerProps {
   isAdmin: boolean;
   onClose: () => void;
   onStatusChange?: (id: string, status: string) => void;
+  onArchive?: (id: string, archived: boolean) => void;
 }
 
-export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange }: DrawerProps) {
+export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange, onArchive }: DrawerProps) {
   const router = useRouter();
   const [data, setData]           = useState<{ booking: Booking; photos: Photo[]; quote: Quote | null; invoice: Invoice | null; invoiceUrl: string | null } | null>(null);
   const [loading, setLoading]     = useState(false);
@@ -495,6 +496,7 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
       body: JSON.stringify({ archived: next }),
     });
     setArchiving(false);
+    onArchive?.(bookingId, next);
     if (next) onClose();
   }
 

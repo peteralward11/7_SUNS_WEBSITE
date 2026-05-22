@@ -226,6 +226,9 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
         onStatusChange={(id, newStatus) =>
           setJobs(prev => prev.map(j => j.id === id ? { ...j, status: newStatus } : j))
         }
+        onArchive={(id, archived) =>
+          setJobs(prev => prev.map(j => j.id === id ? { ...j, archived } : j))
+        }
       />
 
       {isAdmin && (

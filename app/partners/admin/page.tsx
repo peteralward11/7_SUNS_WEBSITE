@@ -4,13 +4,17 @@ import { PortalFooter } from "../_components/PortalShell";
 import PortalPageShell from "../_components/PortalPageShell";
 import JobsBarChart from "../_components/JobsBarChart";
 import RecentActivityFeed from "../_components/RecentActivityFeed";
+import MonthPicker from "../_components/MonthPicker";
 
 export const dynamic = "force-dynamic";
 
-function getBarChartData(jobs: { created_at: string; status?: string | null }[]) {
-  const now = new Date();
+function getBarChartData(
+  jobs: { created_at: string; status?: string | null }[],
+  refYear: number,
+  refMonth: number, // 0-indexed
+) {
   return Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const d = new Date(refYear, refMonth - (5 - i), 1);
     const month = d.getMonth();
     const year = d.getFullYear();
     const monthJobs = jobs.filter(j => {
@@ -46,7 +50,7 @@ function StatCard({ label, value, accentColor }: { label: string; value: number;
   );
 }
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -75,18 +79,36 @@ export default async function AdminPage() {
   const jobs = bookingsRes.data ?? [];
   const recentActivity = activityRes.data ?? [];
 
-  const total      = jobs.length;
-  const pending    = jobs.filter(j => (j.status ?? "pending") === "pending").length;
-  const inProgress = jobs.filter(j => ["quoted", "confirmed", "scheduled", "in progress"].includes(j.status ?? "")).length;
-  const completed  = jobs.filter(j => ["completed", "paid"].includes(j.status ?? "")).length;
-  const paid       = jobs.filter(j => j.status === "paid").length;
-  const thisMonth  = jobs.filter(j => {
-    const d = new Date(j.created_at);
-    const now = new Date();
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).length;
+  // Parse selected month from URL, default to current month
+  const params = await searchParams;
+  const now = new Date();
+  let selYear = now.getFullYear();
+  let selMonth = now.getMonth(); // 0-indexed
 
-  const chartData = getBarChartData(jobs);
+  const monthParam = params.month;
+  if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
+    const [y, m] = monthParam.split("-").map(Number);
+    if (m >= 1 && m <= 12) {
+      selYear = y;
+      selMonth = m - 1;
+    }
+  }
+
+  const monthStr = `${selYear}-${String(selMonth + 1).padStart(2, "0")}`;
+
+  // Stats filtered to selected month
+  const monthJobs = jobs.filter(j => {
+    const d = new Date(j.created_at);
+    return d.getMonth() === selMonth && d.getFullYear() === selYear;
+  });
+
+  const newJobs    = monthJobs.length;
+  const pending    = monthJobs.filter(j => (j.status ?? "pending") === "pending").length;
+  const inProgress = monthJobs.filter(j => ["quoted", "confirmed", "scheduled", "in progress"].includes(j.status ?? "")).length;
+  const completed  = monthJobs.filter(j => ["completed", "paid"].includes(j.status ?? "")).length;
+  const paid       = monthJobs.filter(j => j.status === "paid").length;
+
+  const chartData = getBarChartData(jobs, selYear, selMonth);
   const miniJobs  = jobs.map(j => ({ id: j.id, created_at: j.created_at }));
 
   const activityEntries = (recentActivity as unknown as {
@@ -100,21 +122,23 @@ export default async function AdminPage() {
         <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 6px" }}>
           Admin
         </p>
-        <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text)", margin: "0 0 28px", lineHeight: 1.2 }}>
-          Dashboard
-        </h1>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text)", margin: 0, lineHeight: 1.2 }}>
+            Dashboard
+          </h1>
+          <MonthPicker value={monthStr} />
+        </div>
 
-        {/* 6 unified stat cards */}
+        {/* Stat cards — scoped to selected month */}
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 20 }}>
-          <StatCard label="Total Jobs"  value={total} />
+          <StatCard label="New Jobs"    value={newJobs} />
           <StatCard label="Pending"     value={pending}    accentColor="#3F4A5C" />
           <StatCard label="In Progress" value={inProgress} accentColor="#1F6FEB" />
           <StatCard label="Completed"   value={completed}  accentColor="#1E7E4A" />
           <StatCard label="Paid"        value={paid}       accentColor="#1E7E4A" />
-          <StatCard label="This Month"  value={thisMonth} />
         </div>
 
-        {/* Full-width bar chart */}
+        {/* Bar chart — 6 months ending at selected month */}
         <div style={{ marginBottom: 20 }}>
           <JobsBarChart data={chartData} />
         </div>
