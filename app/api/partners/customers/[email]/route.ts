@@ -139,7 +139,10 @@ export async function DELETE(
   if (ids.length > 0) {
     await admin.from("fp_job_activity").delete().in("booking_id", ids);
     await admin.from("fp_job_photos").delete().in("booking_id", ids);
-    await admin.from("fp_invoices").delete().in("booking_id", ids);
+    // Preserve paid invoices so historical revenue totals are unaffected —
+    // detach them from the booking rather than deleting them.
+    await admin.from("fp_invoices").update({ booking_id: null }).in("booking_id", ids).eq("status", "paid");
+    await admin.from("fp_invoices").delete().in("booking_id", ids).neq("status", "paid");
     await admin.from("fp_quotes").delete().in("booking_id", ids);
     await admin.from("bookings").delete().in("id", ids);
   }
