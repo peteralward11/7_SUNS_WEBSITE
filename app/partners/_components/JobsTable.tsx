@@ -233,6 +233,7 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
           selectedIds={selectedIds}
           onClear={() => setSelectedIds([])}
           onRefresh={refresh}
+          onDelete={(ids) => setJobs(prev => prev.filter(j => !ids.includes(j.id)))}
         />
       )}
     </>

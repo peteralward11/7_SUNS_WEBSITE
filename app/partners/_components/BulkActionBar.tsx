@@ -8,9 +8,10 @@ interface BulkActionBarProps {
   selectedIds: string[];
   onClear: () => void;
   onRefresh: () => void;
+  onDelete: (ids: string[]) => void;
 }
 
-export default function BulkActionBar({ selectedIds, onClear, onRefresh }: BulkActionBarProps) {
+export default function BulkActionBar({ selectedIds, onClear, onRefresh, onDelete }: BulkActionBarProps) {
   const [bulkStatus, setBulkStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -36,15 +37,16 @@ export default function BulkActionBar({ selectedIds, onClear, onRefresh }: BulkA
 
   async function bulkDelete() {
     setLoading(true);
+    const ids = [...selectedIds];
     await Promise.all(
-      selectedIds.map(id =>
+      ids.map(id =>
         fetch(`/api/partners/bookings/${id}`, { method: "DELETE" })
       )
     );
     setLoading(false);
     setConfirmDelete(false);
+    onDelete(ids);
     onClear();
-    onRefresh();
   }
 
   return (
