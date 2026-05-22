@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
+
+function adminClient() {
+  return createServiceClient(
+    (process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL)!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export const dynamic = "force-dynamic";
 
@@ -140,7 +148,14 @@ export async function DELETE(
 
     if (!portalUser?.is_admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    const { error } = await supabase
+    // Use service role to bypass RLS and cascade-delete related records first
+    const admin = adminClient();
+    await admin.from("fp_job_activity").delete().eq("booking_id", id);
+    await admin.from("fp_job_photos").delete().eq("booking_id", id);
+    await admin.from("fp_quotes").delete().eq("booking_id", id);
+    await admin.from("fp_invoices").delete().eq("booking_id", id);
+
+    const { error } = await admin
       .from("bookings")
       .delete()
       .eq("id", id)

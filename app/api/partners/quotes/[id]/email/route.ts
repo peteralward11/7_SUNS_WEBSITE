@@ -71,13 +71,13 @@ export async function POST(
 <body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
   <div style="max-width:560px;margin:40px auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
     <div style="background:#111111;padding:28px 32px;">
-      <p style="margin:0;color:#E8A33D;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">7 Suns Delivery and Logistics</p>
+      <p style="margin:0;color:#E8A33D;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">7 Suns Delivery &amp; Logistics</p>
       <h1 style="margin:6px 0 0;color:#ffffff;font-size:22px;font-weight:700;">Your Quote</h1>
     </div>
     <div style="padding:32px;">
       <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.6;">
         Hi ${booking.full_name ?? "there"},<br/>
-        Here's a summary of your quote from 7 Suns Delivery and Logistics.
+        Here's a summary of your quote from 7 Suns Delivery &amp; Logistics.
       </p>
       <table style="width:100%;border-collapse:collapse;">
         <thead>
@@ -104,11 +104,11 @@ export async function POST(
 
       <p style="margin:32px 0 0;color:#6b7280;font-size:13px;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:24px;">
         If you have any questions, reply to this email or give us a call.<br/>
-        Thank you for choosing 7 Suns Delivery and Logistics.
+        Thank you for choosing 7 Suns Delivery &amp; Logistics.
       </p>
     </div>
     <div style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
-      <p style="margin:0;color:#9ca3af;font-size:12px;">7 Suns Delivery and Logistics &mdash; 7suns.ca</p>
+      <p style="margin:0;color:#9ca3af;font-size:12px;">7 Suns Delivery &amp; Logistics &mdash; 7suns.ca</p>
     </div>
   </div>
 </body>
@@ -116,9 +116,9 @@ export async function POST(
 
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { error: sendErr } = await resend.emails.send({
-    from: "7 Suns Delivery and Logistics <noreply@7suns.ca>",
+    from: "7 Suns Delivery & Logistics <noreply@7suns.ca>",
     to: booking.email,
-    subject: `Your quote from 7 Suns Delivery and Logistics — ${fmt(quote.total)}`,
+    subject: `Your quote from 7 Suns Delivery & Logistics — ${fmt(quote.total)}`,
     html,
   });
 
@@ -126,6 +126,8 @@ export async function POST(
     console.error("[quotes/email] send error:", sendErr);
     return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
   }
+
+  await admin.from("fp_quotes").update({ status: "sent" }).eq("id", quote.id);
 
   return NextResponse.json({ success: true });
 }

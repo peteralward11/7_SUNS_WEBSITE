@@ -15,7 +15,8 @@ interface Booking { [key: string]: unknown }
 /* ─── Stage config ───────────────────────────────────────── */
 const STAGES = [
   { label: "New",         nextStatus: "quoted",      nextLabel: "Move to Quoted" },
-  { label: "Quoted",      nextStatus: "scheduled",   nextLabel: "Move to Scheduled" },
+  { label: "Quoted",      nextStatus: "confirmed",   nextLabel: "Move to Confirmed" },
+  { label: "Confirmed",   nextStatus: "scheduled",   nextLabel: "Move to Scheduled" },
   { label: "Scheduled",   nextStatus: "in progress", nextLabel: "Start Job" },
   { label: "In Progress", nextStatus: "completed",   nextLabel: "Mark as Complete" },
   { label: "Done",        nextStatus: null as string | null, nextLabel: null as string | null },
@@ -23,10 +24,11 @@ const STAGES = [
 
 function getStageIndex(status: string): number {
   if (["pending"].includes(status)) return 0;
-  if (["quoted", "confirmed"].includes(status)) return 1;
-  if (["scheduled"].includes(status)) return 2;
-  if (["in progress"].includes(status)) return 3;
-  if (["completed", "paid"].includes(status)) return 4;
+  if (["quoted"].includes(status)) return 1;
+  if (["confirmed"].includes(status)) return 2;
+  if (["scheduled"].includes(status)) return 3;
+  if (["in progress"].includes(status)) return 4;
+  if (["completed", "paid"].includes(status)) return 5;
   return 0;
 }
 
@@ -83,6 +85,20 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
   const [emailing, setEmailing]   = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [emailErr, setEmailErr]   = useState(false);
+  const [quoteStatus, setQuoteStatus] = useState<string | null>(q0?.status ?? null);
+  const [approving, setApproving] = useState(false);
+
+  useEffect(() => {
+    if (quoteStatus !== "sent" || !quote) return;
+    const iv = setInterval(async () => {
+      const res = await fetch(`/api/partners/quotes/${quote.id}/status`);
+      if (!res.ok) return;
+      const { status } = await res.json();
+      setQuoteStatus(status);
+      if (status === "approved") clearInterval(iv);
+    }, 30_000);
+    return () => clearInterval(iv);
+  }, [quoteStatus, quote?.id]);
 
   const total = lineItems.reduce((s, li) => s + (parseFloat(li.amount) || 0), 0);
   function updateLine(i: number, f: keyof LineItem, v: string) {
@@ -96,8 +112,16 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
       body: JSON.stringify({ booking_id: bookingId, line_items: lineItems, total }),
     });
     const d = await res.json();
-    if (d.quote) { setQuote(d.quote); setShowBuilder(false); }
+    if (d.quote) { setQuote(d.quote); setQuoteStatus(d.quote.status ?? null); setShowBuilder(false); }
     setSaving(false);
+  }
+
+  async function approveManually() {
+    if (!quote || approving) return;
+    setApproving(true);
+    await fetch(`/api/partners/quotes/${quote.id}/approve`, { method: "POST" });
+    setApproving(false);
+    setQuoteStatus("approved");
   }
 
   async function createInvoice() {
@@ -127,6 +151,7 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
     setEmailing(false);
     if (res.ok) {
       setEmailSent(true);
+      setQuoteStatus("sent");
       setTimeout(() => setEmailSent(false), 3000);
     } else {
       setEmailErr(true);
@@ -192,6 +217,19 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
                 {emailing ? "Sending…" : emailSent ? "Sent ✓" : emailErr ? "Failed — try again" : "Email Customer"}
               </button>
             </div>
+            {quoteStatus === "sent" && (
+              <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, color: "#6b7280" }}>Awaiting customer approval…</span>
+                <button onClick={approveManually} disabled={approving} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 6, background: "var(--hover)", border: "1px solid var(--border)", color: "var(--text-2)", cursor: approving ? "default" : "pointer" }}>
+                  {approving ? "Approving…" : "Approve Manually"}
+                </button>
+              </div>
+            )}
+            {quoteStatus === "approved" && (
+              <div style={{ marginTop: 12, fontSize: 12, color: "#1E7E4A", fontWeight: 600 }}>
+                Approved ✓
+              </div>
+            )}
           </>
         )}
       </div>
@@ -243,7 +281,7 @@ function StageStepper({ stageIndex, isAdmin, onJump }: {
   isAdmin: boolean;
   onJump: (dbStatus: string) => void;
 }) {
-  const jumpStatuses = ["pending", "quoted", "scheduled", "in progress", "completed"];
+  const jumpStatuses = ["pending", "quoted", "confirmed", "scheduled", "in progress", "completed"];
   return (
     <div style={{ display: "flex", alignItems: "center", padding: "16px 24px", borderBottom: "1px solid var(--hairline)", backgroundColor: "var(--surface)" }}>
       {STAGES.map((s, i) => {
@@ -354,7 +392,7 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
 
   async function advanceStage(override = false) {
     if (!stage.nextStatus || advancing) return;
-    if (stageIndex === 3 && !override) {
+    if (stageIndex === 4 && !override) {
       if (!checkSigned) { setBlockWarning("A customer signature is required before completing this job."); return; }
       if (!checkPhoto)  { setBlockWarning("At least one final photo must be attached before completing."); return; }
       if (!allManualChecked) { setBlockWarning("Please tick all checklist items before marking as complete."); return; }
@@ -483,8 +521,8 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
                 </div>
               )}
 
-              {/* ── Stage 1: Quoted — quote builder ── */}
-              {stageIndex === 1 && isAdmin && (
+              {/* ── Stage 1: Quoted / Stage 2: Confirmed — quote panel ── */}
+              {(stageIndex === 1 || stageIndex === 2) && isAdmin && (
                 <div style={{ marginBottom: 28 }}>
                   <QuotePanel
                     bookingId={String(booking.id)}
@@ -497,8 +535,8 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
                 </div>
               )}
 
-              {/* ── Stage 2: Scheduled — appointment details ── */}
-              {stageIndex === 2 && (
+              {/* ── Stage 3: Scheduled — appointment details ── */}
+              {stageIndex === 3 && (
                 <div style={{ marginBottom: 28 }}>
                   <SectionTitle>Appointment</SectionTitle>
                   <DField label="Preferred Date" value={booking.preferred_date ? String(booking.preferred_date) : null} />
@@ -512,8 +550,8 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
                 </div>
               )}
 
-              {/* ── Stage 3: In Progress — signature + checklist ── */}
-              {stageIndex === 3 && (
+              {/* ── Stage 4: In Progress — signature + checklist ── */}
+              {stageIndex === 4 && (
                 <div style={{ marginBottom: 28 }}>
                   {/* Signature */}
                   <div style={{ marginBottom: 28 }}>
@@ -544,8 +582,8 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange 
                 </div>
               )}
 
-              {/* ── Stage 4: Done — invoice summary ── */}
-              {stageIndex === 4 && isAdmin && data.invoice && (
+              {/* ── Stage 5: Done — invoice summary ── */}
+              {stageIndex === 5 && isAdmin && data.invoice && (
                 <div style={{ marginBottom: 28 }}>
                   <SectionTitle>Invoice</SectionTitle>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
