@@ -6,6 +6,7 @@ import JobDrawer from "./JobDrawer";
 import KanbanBoard from "./KanbanBoard";
 import FilterPanel, { DEFAULT_FILTERS, type Filters } from "./FilterPanel";
 import BulkActionBar from "./BulkActionBar";
+import NewJobDrawer from "./NewJobDrawer";
 
 interface Job {
   id: string;
@@ -31,6 +32,11 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
   const [view, setView] = useState<"table" | "kanban">("table");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const [newJobOpen, setNewJobOpen] = useState(false);
+
+  useEffect(() => {
+    setJobs(initialJobs);
+  }, [initialJobs]);
 
   useEffect(() => {
     setActiveJobId(searchParams.get("job"));
@@ -131,6 +137,24 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
         <span style={{ fontSize: "12px", color: "var(--text-3)", whiteSpace: "nowrap" }}>
           {filtered.length} job{filtered.length !== 1 ? "s" : ""}
         </span>
+
+        {isAdmin && (
+          <button
+            onClick={() => setNewJobOpen(true)}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "8px 14px", borderRadius: 6, border: "none",
+              backgroundColor: "#111111", color: "#ffffff",
+              fontSize: "13px", fontWeight: 600, cursor: "pointer",
+              whiteSpace: "nowrap", flexShrink: 0,
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Job
+          </button>
+        )}
       </div>
 
       {/* Kanban */}
@@ -218,6 +242,16 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
           )}
         </div>
       )}
+
+      <NewJobDrawer
+        open={newJobOpen}
+        onClose={() => setNewJobOpen(false)}
+        onCreated={(bookingId) => {
+          setNewJobOpen(false);
+          router.refresh();
+          openJob(bookingId);
+        }}
+      />
 
       <JobDrawer
         bookingId={activeJobId}
