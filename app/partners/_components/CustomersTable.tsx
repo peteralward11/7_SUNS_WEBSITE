@@ -22,7 +22,7 @@ function fmt(iso: string) {
   return new Date(iso).toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function suburb(address: string | null) {
+function city(address: string | null) {
   if (!address) return "—";
   const parts = address.split(",");
   return parts.length >= 2 ? parts[parts.length - 2].trim() : parts[0].trim();
@@ -132,7 +132,7 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--hairline)", backgroundColor: "var(--hover)" }}>
-              {["Name", "Email", "Suburb", "Jobs", "LTV", "Last Job"].map(h => (
+              {["Name", "Email", "City", "Jobs", "LTV", "Last Job"].map(h => (
                 <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
                   {h}
                 </th>
@@ -186,7 +186,7 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
                     </div>
                   </td>
                   <td style={{ padding: "13px 16px", fontSize: "13px", color: "var(--text-2)" }}>{c.email}</td>
-                  <td style={{ padding: "13px 16px", fontSize: "13px", color: "var(--text-2)" }}>{suburb(c.address)}</td>
+                  <td style={{ padding: "13px 16px", fontSize: "13px", color: "var(--text-2)" }}>{city(c.address)}</td>
                   <td style={{ padding: "13px 16px" }}>
                     <span style={{
                       display: "inline-flex", alignItems: "center", justifyContent: "center",
