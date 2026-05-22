@@ -105,7 +105,7 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
   useEffect(() => {
     if (invoice?.status !== "sent") return;
     const iv = setInterval(async () => {
-      const res = await fetch(`/api/partners/invoices/${invoice.id}/status`);
+      const res = await fetch(`/api/partners/invoices/${invoice.public_token}/status`);
       if (!res.ok) return;
       const { status } = await res.json();
       setInvoice(prev => prev ? { ...prev, status } : null);
@@ -118,7 +118,7 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
     if (!invoice || invoiceEmailing) return;
     setInvoiceEmailing(true);
     setInvoiceEmailErr(false);
-    const res = await fetch(`/api/partners/invoices/${invoice.id}/email`, { method: "POST" });
+    const res = await fetch(`/api/partners/invoices/${invoice.public_token}/email`, { method: "POST" });
     setInvoiceEmailing(false);
     if (res.ok) {
       setInvoice(prev => prev ? { ...prev, status: "sent" } : null);
@@ -131,7 +131,7 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
   async function markInvoicePaid() {
     if (!invoice || paying) return;
     setPaying(true);
-    await fetch(`/api/partners/invoices/${invoice.id}/pay`, { method: "POST" });
+    await fetch(`/api/partners/invoices/${invoice.public_token}/pay`, { method: "POST" });
     setPaying(false);
     setInvoice(prev => prev ? { ...prev, status: "paid", paid_at: new Date().toISOString() } : null);
   }

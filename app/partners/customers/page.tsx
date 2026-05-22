@@ -21,8 +21,8 @@ export default async function CustomersPage() {
 
   const { data: bookings } = await supabase
     .from("bookings")
-    .select("id, full_name, email, address, preferred_date, status, created_at, archived")
-    .eq("source", "fisher_paykel")
+    .select("id, full_name, email, address, preferred_date, status, created_at, archived, source")
+    .in("source", ["fisher_paykel", "direct"])
     .order("created_at", { ascending: false });
 
   // Group into customers by email
@@ -32,6 +32,7 @@ export default async function CustomersPage() {
     address: string | null;
     job_count: number;
     last_job_date: string;
+    source: string;
   }>();
 
   for (const b of bookings ?? []) {
@@ -43,6 +44,7 @@ export default async function CustomersPage() {
       if (b.created_at > existing.last_job_date) {
         existing.last_job_date = b.created_at;
         existing.full_name = b.full_name ?? existing.full_name;
+        existing.source = b.source ?? existing.source;
       }
     } else {
       map.set(key, {
@@ -51,6 +53,7 @@ export default async function CustomersPage() {
         address: b.address ?? null,
         job_count: 1,
         last_job_date: b.created_at,
+        source: b.source ?? "fisher_paykel",
       });
     }
   }

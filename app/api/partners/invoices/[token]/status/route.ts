@@ -11,9 +11,9 @@ function adminClient() {
   );
 }
 
-export async function POST(
+export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -26,19 +26,16 @@ export async function POST(
     .single();
   if (!portalUser?.is_admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { id } = await params;
+  const { token } = await params;
   const admin = adminClient();
 
-  const { data: invoice, error: iErr } = await admin
+  const { data: invoice, error } = await admin
     .from("fp_invoices")
-    .select("id, booking_id")
-    .eq("id", id)
+    .select("status")
+    .eq("public_token", token)
     .single();
 
-  if (iErr || !invoice) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
+  if (error || !invoice) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await admin.from("fp_invoices").update({ status: "paid", paid_at: new Date().toISOString() }).eq("id", id);
-  await admin.from("bookings").update({ status: "paid" }).eq("id", invoice.booking_id);
-
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ status: invoice.status });
 }

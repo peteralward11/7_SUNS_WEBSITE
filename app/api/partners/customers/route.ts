@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 
@@ -74,4 +74,51 @@ export async function GET() {
   );
 
   return NextResponse.json({ customers });
+}
+
+export async function POST(req: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: portalUser } = await supabase
+    .from("fp_portal_users")
+    .select("is_admin")
+    .eq("email", user.email ?? "")
+    .single();
+  if (!portalUser?.is_admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const body = await req.json();
+  const { full_name, email, phone, address, notes, preferred_date } = body;
+
+  if (!full_name || !email || !phone || !address) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  const admin = adminClient();
+  const { data: booking, error } = await admin
+    .from("bookings")
+    .insert({
+      full_name,
+      email,
+      phone,
+      address,
+      notes: notes ?? null,
+      preferred_date: preferred_date ?? null,
+      source: "direct",
+      status: "pending",
+      installation: false,
+      removal: false,
+      elevator: false,
+      stair_carry: false,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("[customers/post] insert error:", error);
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
+  }
+
+  return NextResponse.json({ id: booking.id });
 }

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CustomerDrawer from "./CustomerDrawer";
+import NewCustomerDrawer from "./NewCustomerDrawer";
 
 interface Customer {
   email: string;
@@ -9,6 +10,7 @@ interface Customer {
   address: string | null;
   job_count: number;
   last_job_date: string;
+  source: string;
 }
 
 function fmt(iso: string) {
@@ -26,6 +28,7 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [activeEmail, setActiveEmail] = useState<string | null>(searchParams.get("customer"));
+  const [newOpen, setNewOpen] = useState(false);
 
   function openCustomer(email: string) {
     setActiveEmail(email);
@@ -45,6 +48,12 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
     router.push(`/partners?job=${id}`);
   }
 
+  function handleCreated(email: string) {
+    setNewOpen(false);
+    router.refresh();
+    openCustomer(email);
+  }
+
   const filtered = initial.filter(c => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -57,6 +66,31 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
 
   return (
     <>
+      {/* Toolbar */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+        <button
+          onClick={() => setNewOpen(true)}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: "#111111",
+            border: "none",
+            borderRadius: 6,
+            fontSize: "12px",
+            fontWeight: 600,
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+            color: "#ffffff",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <span style={{ fontSize: "16px", lineHeight: 1, marginTop: -1 }}>+</span>
+          New Customer
+        </button>
+      </div>
+
       {/* Search */}
       <div style={{ marginBottom: 16 }}>
         <input
@@ -123,6 +157,18 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
                         {c.full_name[0]?.toUpperCase() ?? "?"}
                       </div>
                       <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--text)" }}>{c.full_name}</span>
+                      {c.source === "direct" && (
+                        <span style={{
+                          fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em",
+                          textTransform: "uppercase", color: "#1F6FEB",
+                          backgroundColor: "rgba(31,111,235,0.08)",
+                          border: "1px solid rgba(31,111,235,0.2)",
+                          borderRadius: 4, padding: "2px 6px",
+                          flexShrink: 0,
+                        }}>
+                          Direct
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td style={{ padding: "13px 16px", fontSize: "13px", color: "var(--text-2)" }}>{c.email}</td>
@@ -148,6 +194,7 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
       </div>
 
       <CustomerDrawer email={activeEmail} onClose={closeCustomer} onJobClick={openJob} />
+      <NewCustomerDrawer open={newOpen} onClose={() => setNewOpen(false)} onCreated={handleCreated} />
     </>
   );
 }

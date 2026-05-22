@@ -11,9 +11,9 @@ function adminClient() {
   );
 }
 
-export async function GET(
+export async function POST(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -26,16 +26,18 @@ export async function GET(
     .single();
   if (!portalUser?.is_admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { id } = await params;
+  const { token } = await params;
   const admin = adminClient();
 
-  const { data: invoice, error } = await admin
+  const { error } = await admin
     .from("fp_invoices")
-    .select("status")
-    .eq("id", id)
-    .single();
+    .update({ status: "paid", paid_at: new Date().toISOString() })
+    .eq("public_token", token);
 
-  if (error || !invoice) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (error) {
+    console.error("[invoices/pay] error:", error);
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
+  }
 
-  return NextResponse.json({ status: invoice.status });
+  return NextResponse.json({ success: true });
 }

@@ -20,7 +20,7 @@ function fmt(n: number) {
 
 export async function POST(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -33,13 +33,13 @@ export async function POST(
     .single();
   if (!portalUser?.is_admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { id } = await params;
+  const { token } = await params;
   const admin = adminClient();
 
   const { data: invoice, error: iErr } = await admin
     .from("fp_invoices")
-    .select("id, amount, booking_id, public_token, stripe_checkout_url")
-    .eq("id", id)
+    .select("id, amount, status, public_token, booking_id, quote_id, stripe_checkout_url, fp_quotes(line_items, total)")
+    .eq("public_token", token)
     .single();
 
   if (iErr || !invoice) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
@@ -52,8 +52,19 @@ export async function POST(
 
   if (bErr || !booking?.email) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
 
-  const invoicePageUrl = `${SITE}/partners/invoice/${invoice.public_token}`;
-  const payUrl = invoice.stripe_checkout_url ?? invoicePageUrl;
+  const invoiceUrl = `${SITE}/partners/invoice/${invoice.public_token}`;
+  const payUrl = invoice.stripe_checkout_url ?? invoiceUrl;
+
+  const quoteData = (Array.isArray(invoice.fp_quotes) ? invoice.fp_quotes[0] : invoice.fp_quotes) as { line_items: { description: string; amount: string }[]; total: number } | null | undefined;
+  const lineItems = quoteData?.line_items ?? [];
+
+  const rows = lineItems
+    .map(li => `
+      <tr>
+        <td style="padding:8px 0;color:#374151;font-size:14px;border-bottom:1px solid #f3f4f6;">${li.description || "—"}</td>
+        <td style="padding:8px 0;color:#111827;font-size:14px;font-weight:600;text-align:right;border-bottom:1px solid #f3f4f6;">${fmt(parseFloat(li.amount) || 0)}</td>
+      </tr>`)
+    .join("");
 
   const html = `
 <!DOCTYPE html>
@@ -68,21 +79,41 @@ export async function POST(
     <div style="padding:32px;">
       <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.6;">
         Hi ${booking.full_name ?? "there"},<br/>
-        Your invoice from 7 Suns Delivery &amp; Logistics is ready.
+        Thank you for choosing 7 Suns Delivery &amp; Logistics. Here is your invoice for services completed.
       </p>
-      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px 24px;margin-bottom:28px;text-align:center;">
-        <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;">Amount Due</p>
-        <p style="margin:0;font-size:36px;font-weight:700;color:#111827;">${fmt(invoice.amount)}</p>
+      ${rows ? `
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="padding:0 0 8px;text-align:left;font-size:11px;font-weight:700;letter-spacing:0.06em;color:#9ca3af;text-transform:uppercase;border-bottom:2px solid #e5e7eb;">Description</th>
+            <th style="padding:0 0 8px;text-align:right;font-size:11px;font-weight:700;letter-spacing:0.06em;color:#9ca3af;text-transform:uppercase;border-bottom:2px solid #e5e7eb;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr>
+            <td style="padding:14px 0 0;font-size:15px;font-weight:700;color:#111827;">Total Due</td>
+            <td style="padding:14px 0 0;font-size:15px;font-weight:700;color:#111827;text-align:right;">${fmt(invoice.amount)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      ` : `
+      <div style="display:flex;justify-content:space-between;padding:14px 0;border-top:2px solid #e5e7eb;">
+        <span style="font-size:15px;font-weight:700;color:#111827;">Total Due</span>
+        <span style="font-size:15px;font-weight:700;color:#111827;">${fmt(invoice.amount)}</span>
       </div>
-      <div style="margin:0 0 0;text-align:center;">
+      `}
+
+      <div style="margin:32px 0 0;text-align:center;">
         <a href="${payUrl}" style="display:inline-block;padding:14px 32px;background:#111111;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;letter-spacing:0.01em;">
           Pay Now →
         </a>
-        <p style="margin:12px 0 0;font-size:12px;color:#9ca3af;">Secure payment — takes less than a minute</p>
+        <p style="margin:12px 0 0;font-size:12px;color:#9ca3af;">Secure payment — no account needed</p>
       </div>
+
       <p style="margin:32px 0 0;color:#6b7280;font-size:13px;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:24px;">
         If you have any questions, reply to this email or give us a call.<br/>
-        Thank you for choosing 7 Suns Delivery &amp; Logistics.
+        Thank you for your business.
       </p>
     </div>
     <div style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
@@ -105,7 +136,7 @@ export async function POST(
     return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
   }
 
-  await admin.from("fp_invoices").update({ status: "sent" }).eq("id", id);
+  await admin.from("fp_invoices").update({ status: "sent" }).eq("public_token", token);
 
   return NextResponse.json({ success: true });
 }
