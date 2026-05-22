@@ -18,7 +18,6 @@ export async function GET(
     .from("bookings")
     .select("*")
     .eq("id", id)
-    .eq("source", "fisher_paykel")
     .single();
 
   if (error || !booking) return NextResponse.json({ error: "Not found" }, { status: 404 });

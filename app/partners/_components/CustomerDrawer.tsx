@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { StatusBadge } from "./PortalShell";
+import NewJobDrawer from "./NewJobDrawer";
 
 interface Job {
   id: string;
@@ -44,6 +45,7 @@ export default function CustomerDrawer({
   const router = useRouter();
   const [data, setData] = useState<CustomerData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [newJobOpen, setNewJobOpen] = useState(false);
 
   const load = useCallback(async (e: string) => {
     setLoading(true);
@@ -63,6 +65,12 @@ export default function CustomerDrawer({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  function handleJobCreated(bookingId: string) {
+    setNewJobOpen(false);
+    onClose();
+    onJobClick(bookingId);
+  }
 
   if (!email) return null;
 
@@ -104,22 +112,40 @@ export default function CustomerDrawer({
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {data && (
-              <button
-                onClick={() => router.push(`/partners/customers/${encodeURIComponent(email)}`)}
-                style={{
-                  padding: "5px 12px",
-                  backgroundColor: "transparent",
-                  border: "1px solid var(--border)",
-                  borderRadius: 6,
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  color: "var(--text-3)",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Full page →
-              </button>
+              <>
+                <button
+                  onClick={() => setNewJobOpen(true)}
+                  style={{
+                    padding: "5px 12px",
+                    backgroundColor: "#111111",
+                    border: "none",
+                    borderRadius: 6,
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "#ffffff",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  + Add Job
+                </button>
+                <button
+                  onClick={() => router.push(`/partners/customers/${encodeURIComponent(email)}`)}
+                  style={{
+                    padding: "5px 12px",
+                    backgroundColor: "transparent",
+                    border: "1px solid var(--border)",
+                    borderRadius: 6,
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "var(--text-3)",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Full page →
+                </button>
+              </>
             )}
             <button
               onClick={onClose}
@@ -236,6 +262,16 @@ export default function CustomerDrawer({
           )}
         </div>
       </div>
+
+      <NewJobDrawer
+        open={newJobOpen}
+        onClose={() => setNewJobOpen(false)}
+        onCreated={handleJobCreated}
+        customerName={data?.full_name ?? email}
+        customerEmail={email}
+        customerPhone={data?.phone ?? ""}
+        customerAddress={data?.address ?? ""}
+      />
     </>
   );
 }

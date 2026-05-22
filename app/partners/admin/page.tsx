@@ -78,7 +78,7 @@ export default async function AdminPage() {
     supabase
       .from("bookings")
       .select("id, created_at, status")
-      .eq("source", "fisher_paykel")
+      .in("source", ["fisher_paykel", "direct"])
       .order("created_at", { ascending: false }),
     supabase
       .from("fp_job_activity")

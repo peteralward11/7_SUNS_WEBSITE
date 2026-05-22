@@ -26,7 +26,7 @@ export default async function PartnersPage() {
     supabase
       .from("bookings")
       .select("id, full_name, email, address, preferred_date, appliances, status, created_at, project_type, fp_order_number, archived")
-      .eq("source", "fisher_paykel")
+      .in("source", ["fisher_paykel", "direct"])
       .order("created_at", { ascending: false }),
   ]);
 

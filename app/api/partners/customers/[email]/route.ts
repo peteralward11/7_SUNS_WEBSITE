@@ -32,7 +32,6 @@ export async function GET(
   const { data: jobs, error } = await adminClient()
     .from("bookings")
     .select("id, full_name, email, phone, address, preferred_date, appliances, status, created_at, fp_order_number, archived")
-    .eq("source", "fisher_paykel")
     .ilike("email", decoded)
     .order("created_at", { ascending: false });
 
