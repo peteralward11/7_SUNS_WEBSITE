@@ -93,6 +93,27 @@ export default function CustomerDrawer({
     onClose();
   }
 
+  function startEditing() {
+    if (!data) return;
+    setEditName(data.full_name);
+    setEditPhone(data.phone ?? "");
+    setEditAddress(data.address ?? "");
+    setEditing(true);
+  }
+
+  async function handleSave() {
+    if (!email) return;
+    setSaving(true);
+    await fetch(`/api/partners/customers/${encodeURIComponent(email)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ full_name: editName, phone: editPhone, address: editAddress }),
+    });
+    setData(d => d ? { ...d, full_name: editName, phone: editPhone || null, address: editAddress || null } : d);
+    setSaving(false);
+    setEditing(false);
+  }
+
   if (!email) return null;
 
   return (
@@ -198,27 +219,65 @@ export default function CustomerDrawer({
             <>
               {/* Contact info */}
               <div style={{ marginBottom: 28 }}>
-                <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 12px", paddingBottom: 8, borderBottom: "1px solid var(--hairline)" }}>
-                  Contact
-                </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div>
-                    <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 3px" }}>Email</p>
-                    <p style={{ fontSize: "13px", color: "var(--text)", margin: 0 }}>{email}</p>
-                  </div>
-                  {data.phone && (
-                    <div>
-                      <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 3px" }}>Phone</p>
-                      <p style={{ fontSize: "13px", color: "var(--text)", margin: 0 }}>{data.phone}</p>
-                    </div>
-                  )}
-                  {data.address && (
-                    <div style={{ gridColumn: "1 / -1" }}>
-                      <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 3px" }}>Address</p>
-                      <p style={{ fontSize: "13px", color: "var(--text)", margin: 0 }}>{data.address}</p>
-                    </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid var(--hairline)" }}>
+                  <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: 0 }}>Contact</p>
+                  {!editing && (
+                    <button onClick={startEditing} style={{ background: "none", border: "none", padding: 0, fontSize: "11px", color: "var(--text-3)", cursor: "pointer", textDecoration: "underline" }}>Edit</button>
                   )}
                 </div>
+
+                {editing ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {[
+                      { label: "Name", value: editName, set: setEditName },
+                      { label: "Phone", value: editPhone, set: setEditPhone },
+                      { label: "Address", value: editAddress, set: setEditAddress },
+                    ].map(({ label, value, set }) => (
+                      <div key={label}>
+                        <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 3px" }}>{label}</p>
+                        <input
+                          value={value}
+                          onChange={e => set(e.target.value)}
+                          style={{ width: "100%", padding: "7px 10px", fontSize: "13px", border: "1px solid var(--border)", borderRadius: 6, backgroundColor: "var(--input-bg)", color: "var(--text)", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                        />
+                      </div>
+                    ))}
+                    <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                      <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        style={{ padding: "6px 16px", backgroundColor: "#111111", border: "none", borderRadius: 6, fontSize: "12px", fontWeight: 600, color: "#fff", cursor: saving ? "default" : "pointer" }}
+                      >
+                        {saving ? "Saving…" : "Save"}
+                      </button>
+                      <button
+                        onClick={() => setEditing(false)}
+                        style={{ padding: "6px 12px", backgroundColor: "transparent", border: "1px solid var(--border)", borderRadius: 6, fontSize: "12px", color: "var(--text-3)", cursor: "pointer" }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div>
+                      <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 3px" }}>Email</p>
+                      <p style={{ fontSize: "13px", color: "var(--text)", margin: 0 }}>{email}</p>
+                    </div>
+                    {data.phone && (
+                      <div>
+                        <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 3px" }}>Phone</p>
+                        <p style={{ fontSize: "13px", color: "var(--text)", margin: 0 }}>{data.phone}</p>
+                      </div>
+                    )}
+                    {data.address && (
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 3px" }}>Address</p>
+                        <p style={{ fontSize: "13px", color: "var(--text)", margin: 0 }}>{data.address}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Stats */}
