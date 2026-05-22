@@ -55,7 +55,7 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
       email: info.email,
       full_name: info.full_name,
       address: info.address || null,
-      job_count: 1,
+      job_count: 0,
       last_job_date: new Date().toISOString(),
       source: "direct",
     }, ...prev]);

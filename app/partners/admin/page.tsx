@@ -79,6 +79,7 @@ export default async function AdminPage() {
       .from("bookings")
       .select("id, created_at, status")
       .in("source", ["fisher_paykel", "direct"])
+      .neq("status", "contact")
       .order("created_at", { ascending: false }),
     supabase
       .from("fp_job_activity")

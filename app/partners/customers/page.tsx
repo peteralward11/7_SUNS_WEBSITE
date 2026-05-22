@@ -40,7 +40,7 @@ export default async function CustomersPage() {
     if (!key) continue;
     const existing = map.get(key);
     if (existing) {
-      existing.job_count++;
+      if (b.status !== "contact") existing.job_count++;
       if (b.created_at > existing.last_job_date) {
         existing.last_job_date = b.created_at;
         existing.full_name = b.full_name ?? existing.full_name;
@@ -51,7 +51,7 @@ export default async function CustomersPage() {
         email: b.email ?? key,
         full_name: b.full_name ?? "",
         address: b.address ?? null,
-        job_count: 1,
+        job_count: b.status === "contact" ? 0 : 1,
         last_job_date: b.created_at,
         source: b.source ?? "fisher_paykel",
       });

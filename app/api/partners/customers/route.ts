@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       preferred_date: preferred_date ?? null,
       appliances: [],
       source: "direct",
-      status: "pending",
+      status: "contact",
       installation: false,
       removal: false,
       elevator: false,

@@ -45,7 +45,7 @@ export async function GET(
     full_name: latest.full_name ?? "",
     phone: latest.phone ?? null,
     address: latest.address ?? null,
-    jobs,
+    jobs: jobs.filter(j => j.status !== "contact"),
   };
 
   return NextResponse.json({ customer });
