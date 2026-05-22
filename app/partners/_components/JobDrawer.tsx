@@ -803,8 +803,6 @@ export default function JobDrawer({ bookingId, isAdmin, onClose, onStatusChange,
                     invoice={data.invoice}
                     invoiceUrl={data.invoiceUrl}
                     onPaid={() => {
-                      setStatus("paid");
-                      onStatusChange?.(String(booking.id), "paid");
                       router.refresh();
                     }}
                   />

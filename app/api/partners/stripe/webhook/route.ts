@@ -33,24 +33,32 @@ export async function POST(req: NextRequest) {
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
 
-      const [invRes, bookRes] = await Promise.all([
-        supabase
-          .from("fp_invoices")
-          .update({
-            status: "paid",
-            stripe_payment_intent_id: session.payment_intent as string,
-            paid_at: new Date().toISOString(),
-          })
-          .eq("id", invoice_id),
+      const invRes = await supabase
+        .from("fp_invoices")
+        .update({
+          status: "paid",
+          stripe_payment_intent_id: session.payment_intent as string,
+          paid_at: new Date().toISOString(),
+        })
+        .eq("id", invoice_id);
 
-        supabase
+      if (invRes.error) console.error("[stripe/webhook] invoice update failed:", invRes.error);
+
+      // Only promote booking to "paid" if the job is already completed —
+      // paying mid-workflow should not skip operational stages.
+      const { data: booking } = await supabase
+        .from("bookings")
+        .select("status")
+        .eq("id", booking_id)
+        .single();
+
+      if (booking?.status === "completed") {
+        const bookRes = await supabase
           .from("bookings")
           .update({ status: "paid" })
-          .eq("id", booking_id),
-      ]);
-
-      if (invRes.error)  console.error("[stripe/webhook] invoice update failed:", invRes.error);
-      if (bookRes.error) console.error("[stripe/webhook] booking update failed:", bookRes.error);
+          .eq("id", booking_id);
+        if (bookRes.error) console.error("[stripe/webhook] booking update failed:", bookRes.error);
+      }
     }
   }
 

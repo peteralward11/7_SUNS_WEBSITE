@@ -49,12 +49,22 @@ export async function POST(
     return NextResponse.json({ error: "Database error" }, { status: 500 });
   }
 
+  // Only promote the booking to "paid" if the job is already completed —
+  // paying an invoice mid-workflow should not skip operational stages.
   if (invoice.booking_id) {
-    const { error: bookingError } = await admin
+    const { data: booking } = await admin
       .from("bookings")
-      .update({ status: "paid" })
-      .eq("id", invoice.booking_id);
-    if (bookingError) console.error("[invoices/pay] booking update failed:", bookingError);
+      .select("status")
+      .eq("id", invoice.booking_id)
+      .single();
+
+    if (booking?.status === "completed") {
+      const { error: bookingError } = await admin
+        .from("bookings")
+        .update({ status: "paid" })
+        .eq("id", invoice.booking_id);
+      if (bookingError) console.error("[invoices/pay] booking update failed:", bookingError);
+    }
   }
 
   return NextResponse.json({ success: true });
