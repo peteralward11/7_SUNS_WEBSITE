@@ -56,20 +56,12 @@ export default async function PublicInvoicePage({ params }: { params: Promise<{ 
       }}>
         <div>
           <div style={{ color: "#FFFFFF", fontSize: "12pt", fontWeight: 700, letterSpacing: "0.06em" }}>
-            FISHER &amp; PAYKEL
+            7 SUNS DELIVERY &amp; LOGISTICS
           </div>
           <div style={{ color: "#7A7A7A", fontSize: "8.5pt", letterSpacing: "0.03em", marginTop: 2 }}>
-            Friends &amp; Family Delivery Portal
+            Professional Delivery &amp; Installation
           </div>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ color: "#FFFFFF", fontSize: "10pt", fontWeight: 700, letterSpacing: "0.04em" }}>
-            7SUNS
-          </div>
-          <div style={{ color: "#B8B8B8", fontSize: "7.5pt", letterSpacing: "0.04em", marginTop: 1 }}>
-            DELIVERY &amp; INSTALLATION PARTNER
-          </div>
-          <div style={{ height: "1.8px", backgroundColor: "#E8A33D", marginTop: 3 }} />
+          <div style={{ height: "1.8px", backgroundColor: "#E8A33D", marginTop: 6 }} />
         </div>
       </header>
 
@@ -86,7 +78,7 @@ export default async function PublicInvoicePage({ params }: { params: Promise<{ 
                   {booking?.full_name}
                 </h1>
                 <p style={{ fontSize: "14px", color: "#5A5A5A", margin: 0 }}>
-                  Fisher &amp; Paykel Order #{booking?.fp_order_number ?? "—"}
+                  Order #{booking?.fp_order_number ?? "—"}
                 </p>
               </div>
               {/* Status badge */}
@@ -205,7 +197,7 @@ export default async function PublicInvoicePage({ params }: { params: Promise<{ 
 
       <footer style={{ borderTop: "1px solid #EDEDED", padding: "16px 40px", textAlign: "center", backgroundColor: "#FFFFFF" }}>
         <p style={{ fontSize: "8.5pt", color: "#5A5A5A", margin: 0 }}>
-          © Fisher &amp; Paykel Appliances Ltd · Delivery &amp; installation by 7suns, an authorised Fisher &amp; Paykel partner. Engineered for Life. Est. 1934.
+          © 7 Suns Delivery &amp; Logistics · Professional delivery and installation services.
         </p>
       </footer>
     </div>

@@ -59,8 +59,8 @@ export async function GET(
       { size: "LETTER", style: styles.page },
       // Header
       React.createElement(View, { style: styles.header },
-        React.createElement(Text, { style: styles.brand }, "FISHER & PAYKEL"),
-        React.createElement(Text, { style: styles.sub }, "DELIVERED BY 7SUNS · AUTHORISED PARTNER"),
+        React.createElement(Text, { style: styles.brand }, "7 SUNS DELIVERY & LOGISTICS"),
+        React.createElement(Text, { style: styles.sub }, "PROFESSIONAL DELIVERY & INSTALLATION"),
         React.createElement(View, { style: styles.accent }),
       ),
       // Invoice title + status
@@ -106,7 +106,7 @@ export async function GET(
       ),
       // Footer
       React.createElement(View, { style: styles.footer },
-        React.createElement(Text, null, "© Fisher & Paykel Appliances Ltd · Delivered by 7Suns, an authorised Fisher & Paykel partner. Engineered for Life."),
+        React.createElement(Text, null, "© 7 Suns Delivery & Logistics · Professional delivery and installation services."),
       ),
     )
   );

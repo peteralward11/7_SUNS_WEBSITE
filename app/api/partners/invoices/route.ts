@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
             price_data: {
               currency: "cad",
               product_data: {
-                name: `Fisher & Paykel Delivery & Installation — ${customer_name}`,
+                name: `7 Suns Delivery & Logistics — ${customer_name}`,
               },
               unit_amount: Math.round(amount * 100),
             },
