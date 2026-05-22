@@ -82,10 +82,13 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
   const [saving, setSaving]       = useState(false);
   const [creating, setCreating]   = useState(false);
   const [copied, setCopied]       = useState(false);
-  const [emailing, setEmailing]   = useState(false);
-  const [emailErr, setEmailErr]   = useState(false);
+  const [emailing, setEmailing]       = useState(false);
+  const [emailErr, setEmailErr]       = useState(false);
   const [quoteStatus, setQuoteStatus] = useState<string | null>(q0?.status ?? null);
-  const [approving, setApproving] = useState(false);
+  const [approving, setApproving]     = useState(false);
+  const [invoiceEmailing, setInvoiceEmailing] = useState(false);
+  const [invoiceEmailErr, setInvoiceEmailErr] = useState(false);
+  const [paying, setPaying]           = useState(false);
 
   useEffect(() => {
     if (quoteStatus !== "sent" || !quote) return;
@@ -98,6 +101,40 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
     }, 30_000);
     return () => clearInterval(iv);
   }, [quoteStatus, quote?.id]);
+
+  useEffect(() => {
+    if (invoice?.status !== "sent") return;
+    const iv = setInterval(async () => {
+      const res = await fetch(`/api/partners/invoices/${invoice.id}/status`);
+      if (!res.ok) return;
+      const { status } = await res.json();
+      setInvoice(prev => prev ? { ...prev, status } : null);
+      if (status === "paid") clearInterval(iv);
+    }, 30_000);
+    return () => clearInterval(iv);
+  }, [invoice?.status, invoice?.id]);
+
+  async function emailInvoice() {
+    if (!invoice || invoiceEmailing) return;
+    setInvoiceEmailing(true);
+    setInvoiceEmailErr(false);
+    const res = await fetch(`/api/partners/invoices/${invoice.id}/email`, { method: "POST" });
+    setInvoiceEmailing(false);
+    if (res.ok) {
+      setInvoice(prev => prev ? { ...prev, status: "sent" } : null);
+    } else {
+      setInvoiceEmailErr(true);
+      setTimeout(() => setInvoiceEmailErr(false), 4000);
+    }
+  }
+
+  async function markInvoicePaid() {
+    if (!invoice || paying) return;
+    setPaying(true);
+    await fetch(`/api/partners/invoices/${invoice.id}/pay`, { method: "POST" });
+    setPaying(false);
+    setInvoice(prev => prev ? { ...prev, status: "paid", paid_at: new Date().toISOString() } : null);
+  }
 
   const total = lineItems.reduce((s, li) => s + (parseFloat(li.amount) || 0), 0);
   function updateLine(i: number, f: keyof LineItem, v: string) {
@@ -259,7 +296,10 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
                 <span style={{ fontSize: "24px", fontWeight: 700, color: "var(--text)" }}>{fmt(invoice.amount)}</span>
-                <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: invoice.status === "paid" ? "#1E7E4A" : "#3F4A5C", backgroundColor: invoice.status === "paid" ? "#1E7E4A22" : "#3F4A5C22", padding: "3px 8px", borderRadius: 99 }}>
+                <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+                  color: invoice.status === "paid" ? "#1E7E4A" : invoice.status === "sent" ? "#B45309" : "#3F4A5C",
+                  backgroundColor: invoice.status === "paid" ? "#1E7E4A22" : invoice.status === "sent" ? "#B4530922" : "#3F4A5C22",
+                  padding: "3px 8px", borderRadius: 99 }}>
                   {invoice.status}
                 </span>
               </div>
@@ -271,10 +311,34 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
                 </div>
               )}
               {invoiceUrl && (
-                <a href={`/api/partners/pdf/invoice/${invoice.public_token}`} target="_blank" rel="noopener noreferrer"
-                  style={{ ...btn(true) as React.CSSProperties, display: "block", textAlign: "center", textDecoration: "none", marginTop: 8 }}>
-                  Download PDF
-                </a>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                  <a href={`/api/partners/pdf/invoice/${invoice.public_token}`} target="_blank" rel="noopener noreferrer"
+                    style={{ ...btn(false) as React.CSSProperties, width: "auto", padding: "5px 12px", fontSize: "11px", textDecoration: "none", display: "inline-block" }}>
+                    Download PDF
+                  </a>
+                  {invoice.status !== "paid" && (
+                    <button
+                      onClick={emailInvoice}
+                      disabled={invoiceEmailing || invoice.status === "sent"}
+                      style={{
+                        ...btn(true, invoiceEmailing),
+                        ...(invoiceEmailErr ? { backgroundColor: "#B44A2C", color: "#fff" } : {}),
+                        ...(invoice.status === "sent" ? { backgroundColor: "#111111", color: "#fff", opacity: 0.55, cursor: "default" } : {}),
+                        width: "auto", padding: "5px 12px", fontSize: "11px",
+                      }}
+                    >
+                      {invoiceEmailing ? "Sending…" : invoiceEmailErr ? "Failed — try again" : invoice.status === "sent" ? "Invoice Sent" : "Email Invoice"}
+                    </button>
+                  )}
+                </div>
+              )}
+              {invoice.status === "sent" && (
+                <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 12, color: "#6b7280" }}>Awaiting payment…</span>
+                  <button onClick={markInvoicePaid} disabled={paying} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 6, background: "var(--hover)", border: "1px solid var(--border)", color: "var(--text-2)", cursor: paying ? "default" : "pointer" }}>
+                    {paying ? "Updating…" : "Mark as Paid"}
+                  </button>
+                </div>
               )}
             </>
           )}
