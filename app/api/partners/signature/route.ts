@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   );
 
   const { error: uploadError } = await admin.storage
-    .from("job-signatures")
+    .from("job signatures")
     .upload(path, file, { contentType: "image/png", upsert: true });
 
   if (uploadError) {
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: uploadError.message }, { status: 500 });
   }
 
-  const { data: urlData } = admin.storage.from("job-signatures").getPublicUrl(path);
+  const { data: urlData } = admin.storage.from("job signatures").getPublicUrl(path);
   const url = urlData.publicUrl;
 
   const { error } = await supabase
