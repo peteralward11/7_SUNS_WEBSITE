@@ -78,7 +78,7 @@ export default async function PublicInvoicePage({ params }: { params: Promise<{ 
                   {booking?.full_name}
                 </h1>
                 <p style={{ fontSize: "14px", color: "#5A5A5A", margin: 0 }}>
-                  Order #{booking?.fp_order_number ?? "—"}
+                  Fisher &amp; Paykel Order #{booking?.fp_order_number ?? "—"}
                 </p>
               </div>
               {/* Status badge */}
