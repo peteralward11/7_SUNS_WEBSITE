@@ -29,6 +29,16 @@ export async function POST(
   const { token } = await params;
   const admin = adminClient();
 
+  const { data: invoice, error: fetchError } = await admin
+    .from("fp_invoices")
+    .select("id, booking_id")
+    .eq("public_token", token)
+    .single();
+
+  if (fetchError || !invoice) {
+    return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
+  }
+
   const { error } = await admin
     .from("fp_invoices")
     .update({ status: "paid", paid_at: new Date().toISOString() })
@@ -37,6 +47,13 @@ export async function POST(
   if (error) {
     console.error("[invoices/pay] error:", error);
     return NextResponse.json({ error: "Database error" }, { status: 500 });
+  }
+
+  if (invoice.booking_id) {
+    await admin
+      .from("bookings")
+      .update({ status: "paid" })
+      .eq("id", invoice.booking_id);
   }
 
   return NextResponse.json({ success: true });
