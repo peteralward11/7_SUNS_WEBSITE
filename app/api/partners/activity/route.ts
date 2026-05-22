@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
+
+function adminClient() {
+  return createServiceClient(
+    (process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL)!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function GET(req: NextRequest) {
   const bookingId = req.nextUrl.searchParams.get("booking_id");
@@ -11,7 +19,7 @@ export async function GET(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabase
+  const { data, error } = await adminClient()
     .from("fp_job_activity")
     .select("*")
     .eq("booking_id", bookingId)
@@ -36,7 +44,7 @@ export async function DELETE(req: NextRequest) {
     .single();
   if (!portalUser?.is_admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { error } = await supabase
+  const { error } = await adminClient()
     .from("fp_job_activity")
     .delete()
     .eq("id", id)
@@ -64,7 +72,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await adminClient()
     .from("fp_job_activity")
     .insert({
       booking_id,
