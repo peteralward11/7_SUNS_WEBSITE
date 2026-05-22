@@ -148,12 +148,13 @@ export async function DELETE(
 
     if (!portalUser?.is_admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    // Use service role to bypass RLS and cascade-delete related records first
+    // Use service role to bypass RLS and cascade-delete related records first.
+    // Order matters: fp_invoices references fp_quotes (quote_id FK), so invoices must go first.
     const admin = adminClient();
     await admin.from("fp_job_activity").delete().eq("booking_id", id);
     await admin.from("fp_job_photos").delete().eq("booking_id", id);
-    await admin.from("fp_quotes").delete().eq("booking_id", id);
     await admin.from("fp_invoices").delete().eq("booking_id", id);
+    await admin.from("fp_quotes").delete().eq("booking_id", id);
 
     const { error } = await admin
       .from("bookings")
