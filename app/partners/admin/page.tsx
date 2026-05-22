@@ -25,40 +25,21 @@ function getBarChartData(jobs: { created_at: string; status?: string | null }[])
   });
 }
 
-function PrimaryCard({ label, value, accentColor }: { label: string; value: number; accentColor?: string }) {
+function StatCard({ label, value, accentColor }: { label: string; value: number; accentColor?: string }) {
   return (
     <div style={{
       backgroundColor: "var(--surface)",
       border: "1px solid var(--border)",
       borderLeft: accentColor ? `3px solid ${accentColor}` : "1px solid var(--border)",
-      borderRadius: 8,
-      padding: "28px 28px",
-      flex: "1 1 0",
+      borderRadius: 10,
+      padding: "22px 24px",
+      flex: "1 1 160px",
+      minWidth: 0,
     }}>
-      <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 14px" }}>
+      <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 10px" }}>
         {label}
       </p>
-      <p style={{ fontSize: "42px", fontWeight: 700, color: "var(--text)", margin: 0, lineHeight: 1, letterSpacing: "-0.02em" }}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function SecondaryCard({ label, value, accentColor }: { label: string; value: number; accentColor?: string }) {
-  return (
-    <div style={{
-      backgroundColor: "var(--surface)",
-      border: "1px solid var(--border)",
-      borderLeft: accentColor ? `3px solid ${accentColor}` : "1px solid var(--border)",
-      borderRadius: 8,
-      padding: "16px 20px",
-      flex: "1 1 0",
-    }}>
-      <p style={{ fontSize: "7pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 8px" }}>
-        {label}
-      </p>
-      <p style={{ fontSize: "28px", fontWeight: 700, color: "var(--text)", margin: 0, lineHeight: 1, letterSpacing: "-0.02em" }}>
+      <p style={{ fontSize: "32px", fontWeight: 700, color: "var(--text)", margin: 0, lineHeight: 1, letterSpacing: "-0.02em" }}>
         {value}
       </p>
     </div>
@@ -108,7 +89,6 @@ export default async function AdminPage() {
   const chartData = getBarChartData(jobs);
   const miniJobs  = jobs.map(j => ({ id: j.id, created_at: j.created_at }));
 
-  // Type-cast for RecentActivityFeed
   const activityEntries = (recentActivity as unknown as {
     id: string; user_name: string | null; type: string; content: string;
     created_at: string; bookings: { full_name: string } | null;
@@ -116,32 +96,30 @@ export default async function AdminPage() {
 
   return (
     <PortalPageShell jobs={miniJobs} userEmail={user?.email ?? ""} userName={portalUser?.name} isAdmin>
-      <div style={{ padding: "36px 40px 32px" }}>
+      <div style={{ padding: "36px 40px 40px" }}>
         <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 6px" }}>
           Admin
         </p>
-        <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text)", margin: "0 0 32px", lineHeight: 1.2 }}>
+        <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text)", margin: "0 0 28px", lineHeight: 1.2 }}>
           Dashboard
         </h1>
 
-        {/* Row 1 — 3 primary KPI cards */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-          <PrimaryCard label="Total Jobs" value={total} />
-          <PrimaryCard label="Pending" value={pending} accentColor="#3F4A5C" />
-          <PrimaryCard label="In Progress" value={inProgress} accentColor="#1F6FEB" />
+        {/* 6 unified stat cards */}
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 20 }}>
+          <StatCard label="Total Jobs"  value={total} />
+          <StatCard label="Pending"     value={pending}    accentColor="#3F4A5C" />
+          <StatCard label="In Progress" value={inProgress} accentColor="#1F6FEB" />
+          <StatCard label="Completed"   value={completed}  accentColor="#1E7E4A" />
+          <StatCard label="Paid"        value={paid}       accentColor="#1E7E4A" />
+          <StatCard label="This Month"  value={thisMonth} />
         </div>
 
-        {/* Row 2 — 3 secondary cards + bar chart */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 32, alignItems: "stretch" }}>
-          <SecondaryCard label="Completed" value={completed} accentColor="#1E7E4A" />
-          <SecondaryCard label="Paid" value={paid} accentColor="#1E7E4A" />
-          <SecondaryCard label="This Month" value={thisMonth} />
-          <div style={{ flex: 2 }}>
-            <JobsBarChart data={chartData} />
-          </div>
+        {/* Full-width bar chart */}
+        <div style={{ marginBottom: 20 }}>
+          <JobsBarChart data={chartData} />
         </div>
 
-        {/* Recent Activity */}
+        {/* Recent activity */}
         <RecentActivityFeed entries={activityEntries} />
       </div>
 
