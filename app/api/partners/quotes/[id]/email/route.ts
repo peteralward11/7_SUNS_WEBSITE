@@ -12,8 +12,6 @@ function adminClient() {
   );
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 function fmt(n: number) {
   return new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(n);
 }
@@ -104,6 +102,7 @@ export async function POST(
 </body>
 </html>`;
 
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const { error: sendErr } = await resend.emails.send({
     from: "7 Suns Appliances <noreply@7suns.ca>",
     to: booking.email,
