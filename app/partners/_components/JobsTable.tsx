@@ -132,7 +132,7 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
       </div>
 
       {/* Kanban */}
-      {view === "kanban" && <KanbanBoard jobs={filtered} onJobClick={openJob} />}
+      {view === "kanban" && <KanbanBoard jobs={filtered} isAdmin={isAdmin} onJobClick={openJob} />}
 
       {/* Table */}
       {view === "table" && (
