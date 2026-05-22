@@ -83,7 +83,6 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
   const [creating, setCreating]   = useState(false);
   const [copied, setCopied]       = useState(false);
   const [emailing, setEmailing]   = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
   const [emailErr, setEmailErr]   = useState(false);
   const [quoteStatus, setQuoteStatus] = useState<string | null>(q0?.status ?? null);
   const [approving, setApproving] = useState(false);
@@ -150,9 +149,7 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
     const res = await fetch(`/api/partners/quotes/${quote.id}/email`, { method: "POST" });
     setEmailing(false);
     if (res.ok) {
-      setEmailSent(true);
       setQuoteStatus("sent");
-      setTimeout(() => setEmailSent(false), 3000);
     } else {
       setEmailErr(true);
       setTimeout(() => setEmailErr(false), 4000);
@@ -211,23 +208,35 @@ function QuotePanel({ bookingId, customerEmail, customerName, quote: q0, invoice
               <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text)" }}>Total</span>
               <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text)" }}>{fmt(quote.total)}</span>
             </div>
-            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
               <button onClick={() => setShowBuilder(true)} style={{ ...btn(false), width: "auto", padding: "5px 12px", fontSize: "11px" }}>Edit Quote</button>
-              <button onClick={emailQuote} disabled={emailing} style={{ ...btn(true, emailing), ...(emailErr ? { backgroundColor: "#B44A2C", color: "#fff" } : {}), width: "auto", padding: "5px 12px", fontSize: "11px" }}>
-                {emailing ? "Sending…" : emailSent ? "Sent ✓" : emailErr ? "Failed — try again" : "Email Customer"}
+              <button
+                onClick={emailQuote}
+                disabled={emailing || quoteStatus === "sent" || quoteStatus === "approved"}
+                style={{
+                  ...btn(true, emailing),
+                  ...(emailErr ? { backgroundColor: "#B44A2C", color: "#fff" } : {}),
+                  ...((quoteStatus === "sent" || quoteStatus === "approved") ? { backgroundColor: "#111111", color: "#fff", opacity: 0.55, cursor: "default" } : {}),
+                  width: "auto", padding: "5px 12px", fontSize: "11px",
+                }}
+              >
+                {emailing ? "Sending…" : emailErr ? "Failed — try again" : (quoteStatus === "sent" || quoteStatus === "approved") ? "Email Sent" : "Email Customer"}
               </button>
+              {quoteStatus === "approved" && (
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, backgroundColor: "#1E7E4A18", border: "1px solid #1E7E4A55", fontSize: 11, fontWeight: 700, color: "#1E7E4A", letterSpacing: "0.03em" }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1E7E4A" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Approved
+                </div>
+              )}
             </div>
             {quoteStatus === "sent" && (
-              <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12, color: "#6b7280" }}>Awaiting customer approval…</span>
                 <button onClick={approveManually} disabled={approving} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 6, background: "var(--hover)", border: "1px solid var(--border)", color: "var(--text-2)", cursor: approving ? "default" : "pointer" }}>
                   {approving ? "Approving…" : "Approve Manually"}
                 </button>
-              </div>
-            )}
-            {quoteStatus === "approved" && (
-              <div style={{ marginTop: 12, fontSize: 12, color: "#1E7E4A", fontWeight: 600 }}>
-                Approved ✓
               </div>
             )}
           </>
