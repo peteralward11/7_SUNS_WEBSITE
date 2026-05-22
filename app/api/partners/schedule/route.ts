@@ -27,7 +27,14 @@ async function verifyAdmin() {
 function timeWindowToTimes(tw: string): { time_start: string; time_end: string } {
   if (tw === "Afternoon") return { time_start: "12:00", time_end: "16:00" };
   if (tw === "Anytime") return { time_start: "08:00", time_end: "16:00" };
-  return { time_start: "08:00", time_end: "12:00" }; // Morning default
+  return { time_start: "08:00", time_end: "12:00" };
+}
+
+function fmt12h(t: string) {
+  const [h, m] = t.split(":").map(Number);
+  const ampm = h >= 12 ? "pm" : "am";
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return m === 0 ? `${h12}${ampm}` : `${h12}:${String(m).padStart(2, "0")}${ampm}`;
 }
 
 function fmtDate(iso: string) {
@@ -36,10 +43,11 @@ function fmtDate(iso: string) {
   });
 }
 
-function fmtWindow(tw: string) {
-  if (tw === "Morning") return "Morning (8am – 12pm)";
-  if (tw === "Afternoon") return "Afternoon (12pm – 4pm)";
-  return "Anytime (8am – 4pm)";
+function fmtWindow(ts: string, te: string) {
+  if (ts === "08:00" && te === "12:00") return "Morning (8am – 12pm)";
+  if (ts === "12:00" && te === "16:00") return "Afternoon (12pm – 4pm)";
+  if (ts === "08:00" && te === "16:00") return "Anytime (8am – 4pm)";
+  return `${fmt12h(ts)} – ${fmt12h(te)}`;
 }
 
 export async function GET(req: NextRequest) {
@@ -93,14 +101,16 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await req.json();
-  const { booking_id, team_member_id, scheduled_date, time_window } = body;
+  const { booking_id, team_member_id, scheduled_date, time_window, time_start: tsBody, time_end: teBody } = body;
 
   if (!booking_id || !team_member_id || !scheduled_date || !time_window) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
   const admin = adminClient();
-  const { time_start, time_end } = timeWindowToTimes(time_window);
+  const { time_start, time_end } = (tsBody && teBody)
+    ? { time_start: tsBody as string, time_end: teBody as string }
+    : timeWindowToTimes(time_window);
 
   // Check if this booking already has an assignment for this team member on this date
   const { data: existing } = await admin
@@ -166,7 +176,7 @@ export async function POST(req: NextRequest) {
           </tr>
           <tr>
             <td style="padding:6px 0;font-size:12px;font-weight:700;letter-spacing:0.06em;color:#9ca3af;text-transform:uppercase;">Time</td>
-            <td style="padding:6px 0;font-size:15px;font-weight:600;color:#111827;">${fmtWindow(time_window)}</td>
+            <td style="padding:6px 0;font-size:15px;font-weight:600;color:#111827;">${fmtWindow(time_start, time_end)}</td>
           </tr>
           ${booking.address ? `<tr>
             <td style="padding:6px 0;font-size:12px;font-weight:700;letter-spacing:0.06em;color:#9ca3af;text-transform:uppercase;">Location</td>

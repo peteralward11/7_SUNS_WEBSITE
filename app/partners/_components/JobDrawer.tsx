@@ -88,6 +88,8 @@ function SchedulePanel({ bookingId, preferredDate, onScheduled }: {
   const [rescheduling, setRescheduling]     = useState(false);
   const [schedDate, setSchedDate]           = useState(() => preferredDate || new Date().toISOString().split("T")[0]);
   const [schedWindow, setSchedWindow]       = useState("Morning");
+  const [schedTimeStart, setSchedTimeStart] = useState("10:00");
+  const [schedTimeEnd, setSchedTimeEnd]     = useState("12:00");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [saving, setSaving]                 = useState(false);
   const [deletingId, setDeletingId]         = useState<string | null>(null);
@@ -109,13 +111,18 @@ function SchedulePanel({ bookingId, preferredDate, onScheduled }: {
 
   async function handleSchedule() {
     if (!selectedMembers.length || !schedDate || saving) return;
+    const times =
+      schedWindow === "Afternoon" ? { time_start: "12:00", time_end: "16:00" }
+      : schedWindow === "Anytime"   ? { time_start: "08:00", time_end: "16:00" }
+      : schedWindow === "Custom"    ? { time_start: schedTimeStart, time_end: schedTimeEnd }
+      :                               { time_start: "08:00", time_end: "12:00" };
     setSaving(true);
     const results = await Promise.all(
       selectedMembers.map(memberId =>
         fetch("/api/partners/schedule", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ booking_id: bookingId, team_member_id: memberId, scheduled_date: schedDate, time_window: schedWindow }),
+          body: JSON.stringify({ booking_id: bookingId, team_member_id: memberId, scheduled_date: schedDate, time_window: schedWindow, ...times }),
         }).then(r => r.json())
       )
     );
@@ -147,10 +154,18 @@ function SchedulePanel({ bookingId, preferredDate, onScheduled }: {
     });
   }
 
+  function fmt12h(t: string) {
+    const [h, m] = t.split(":").map(Number);
+    const ampm = h >= 12 ? "pm" : "am";
+    const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return m === 0 ? `${h12}${ampm}` : `${h12}:${String(m).padStart(2, "0")}${ampm}`;
+  }
+
   function fmtWindow(ts: string, te: string) {
     if (ts === "08:00" && te === "12:00") return "Morning (8am–12pm)";
     if (ts === "12:00" && te === "16:00") return "Afternoon (12pm–4pm)";
-    return "Anytime (8am–4pm)";
+    if (ts === "08:00" && te === "16:00") return "Anytime (8am–4pm)";
+    return `${fmt12h(ts)} – ${fmt12h(te)}`;
   }
 
   const inputStyle: React.CSSProperties = {
@@ -205,7 +220,7 @@ function SchedulePanel({ bookingId, preferredDate, onScheduled }: {
             <div>
               <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Time Window</label>
               <div style={{ display: "flex", gap: 6 }}>
-                {["Morning", "Afternoon", "Anytime"].map(w => (
+                {["Morning", "Afternoon", "Anytime", "Custom"].map(w => (
                   <button key={w} onClick={() => setSchedWindow(w)} style={{
                     flex: 1, padding: "7px 4px", borderRadius: 6, fontSize: "11px", fontWeight: 600,
                     backgroundColor: schedWindow === w ? "var(--text)" : "transparent",
@@ -214,6 +229,18 @@ function SchedulePanel({ bookingId, preferredDate, onScheduled }: {
                   }}>{w}</button>
                 ))}
               </div>
+              {schedWindow === "Custom" && (
+                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: "10px", fontWeight: 700, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>From</label>
+                    <input type="time" value={schedTimeStart} onChange={e => setSchedTimeStart(e.target.value)} style={inputStyle} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: "10px", fontWeight: 700, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 3 }}>To</label>
+                    <input type="time" value={schedTimeEnd} onChange={e => setSchedTimeEnd(e.target.value)} style={inputStyle} />
+                  </div>
+                </div>
+              )}
             </div>
             <div>
               <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Assign To</label>
@@ -238,18 +265,24 @@ function SchedulePanel({ bookingId, preferredDate, onScheduled }: {
                 </div>
               )}
             </div>
-            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-              {rescheduling && (
-                <button onClick={() => { setRescheduling(false); setSelectedMembers([]); }} style={{ flex: 1, padding: "8px", borderRadius: 6, backgroundColor: "transparent", border: "1px solid var(--border)", color: "var(--text-3)", cursor: "pointer", fontSize: "13px" }}>Cancel</button>
-              )}
-              <button
-                onClick={handleSchedule}
-                disabled={saving || !schedDate || selectedMembers.length === 0}
-                style={{ flex: 2, padding: "8px", borderRadius: 6, backgroundColor: "var(--text)", color: "var(--bg)", border: "none", cursor: (saving || !schedDate || selectedMembers.length === 0) ? "default" : "pointer", fontSize: "13px", fontWeight: 600, opacity: selectedMembers.length === 0 ? 0.5 : 1 }}
-              >
-                {saving ? "Scheduling…" : "Schedule Job"}
-              </button>
-            </div>
+            {(() => {
+              const customInvalid = schedWindow === "Custom" && (!schedTimeStart || !schedTimeEnd || schedTimeEnd <= schedTimeStart);
+              const canSave = !saving && !!schedDate && selectedMembers.length > 0 && !customInvalid;
+              return (
+                <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                  {rescheduling && (
+                    <button onClick={() => { setRescheduling(false); setSelectedMembers([]); }} style={{ flex: 1, padding: "8px", borderRadius: 6, backgroundColor: "transparent", border: "1px solid var(--border)", color: "var(--text-3)", cursor: "pointer", fontSize: "13px" }}>Cancel</button>
+                  )}
+                  <button
+                    onClick={handleSchedule}
+                    disabled={!canSave}
+                    style={{ flex: 2, padding: "8px", borderRadius: 6, backgroundColor: "var(--text)", color: "var(--bg)", border: "none", cursor: canSave ? "pointer" : "default", fontSize: "13px", fontWeight: 600, opacity: canSave ? 1 : 0.5 }}
+                  >
+                    {saving ? "Scheduling…" : "Schedule Job"}
+                  </button>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
