@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -23,16 +24,21 @@ export async function POST(req: NextRequest) {
 
   const path = `${bookingId}/signature.png`;
 
-  const { error: uploadError } = await supabase.storage
+  const admin = createServiceClient(
+    (process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL)!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { error: uploadError } = await admin.storage
     .from("job-signatures")
     .upload(path, file, { contentType: "image/png", upsert: true });
 
   if (uploadError) {
     console.error("[signature] upload error:", uploadError);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    return NextResponse.json({ error: uploadError.message }, { status: 500 });
   }
 
-  const { data: urlData } = supabase.storage.from("job-signatures").getPublicUrl(path);
+  const { data: urlData } = admin.storage.from("job-signatures").getPublicUrl(path);
   const url = urlData.publicUrl;
 
   const { error } = await supabase

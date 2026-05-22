@@ -20,19 +20,29 @@ export default function PhotoGallery({
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     setUploading(true);
+    setError(null);
+
     for (const file of Array.from(files)) {
       const fd = new FormData();
       fd.append("file", file);
       fd.append("booking_id", bookingId);
       const res = await fetch("/api/partners/photos", { method: "POST", body: fd });
       const data = await res.json();
-      if (data.photo) setPhotos(p => [...p, data.photo]);
+      if (data.photo) {
+        setPhotos(p => [...p, data.photo]);
+      } else {
+        setError(data.error ?? "Upload failed — please try again.");
+      }
     }
+
+    // Reset input so the same file can be selected again
+    if (inputRef.current) inputRef.current.value = "";
     setUploading(false);
   }
 
@@ -43,14 +53,14 @@ export default function PhotoGallery({
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: 0 }}>
           Photos ({photos.length})
         </p>
         {isAdmin && (
           <>
             <button
-              onClick={() => inputRef.current?.click()}
+              onClick={() => { setError(null); inputRef.current?.click(); }}
               disabled={uploading}
               style={{
                 backgroundColor: uploading ? "var(--border)" : "var(--text)",
@@ -71,13 +81,18 @@ export default function PhotoGallery({
               type="file"
               accept="image/*"
               multiple
-              capture="environment"
               style={{ display: "none" }}
               onChange={e => handleFiles(e.target.files)}
             />
           </>
         )}
       </div>
+
+      {error && (
+        <div style={{ backgroundColor: "#B44A2C18", border: "1px solid #B44A2C44", borderRadius: 6, padding: "8px 12px", marginBottom: 10 }}>
+          <p style={{ fontSize: "12px", color: "#B44A2C", margin: 0 }}>{error}</p>
+        </div>
+      )}
 
       {photos.length === 0 ? (
         <p style={{ fontSize: "13px", color: "var(--text-3)", margin: 0 }}>No photos attached.</p>
@@ -96,21 +111,11 @@ export default function PhotoGallery({
                   onClick={() => deletePhoto(photo.id)}
                   title="Delete photo"
                   style={{
-                    position: "absolute",
-                    top: 4,
-                    right: 4,
-                    width: 22,
-                    height: 22,
-                    borderRadius: "50%",
-                    backgroundColor: "rgba(0,0,0,0.7)",
-                    border: "none",
-                    color: "#FFFFFF",
-                    fontSize: "12px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    lineHeight: 1,
+                    position: "absolute", top: 4, right: 4,
+                    width: 22, height: 22, borderRadius: "50%",
+                    backgroundColor: "rgba(0,0,0,0.7)", border: "none",
+                    color: "#FFFFFF", fontSize: "12px", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1,
                   }}
                 >
                   ×
@@ -121,46 +126,16 @@ export default function PhotoGallery({
         </div>
       )}
 
-      {/* Lightbox */}
       {lightbox && (
         <div
           className="fp-backdrop"
           onClick={() => setLightbox(null)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.85)",
-            zIndex: 200,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 20,
-          }}
+          style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.85)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
         >
-          <img
-            src={lightbox}
-            alt=""
-            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 8 }}
-            onClick={e => e.stopPropagation()}
-          />
+          <img src={lightbox} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 8 }} onClick={e => e.stopPropagation()} />
           <button
             onClick={() => setLightbox(null)}
-            style={{
-              position: "absolute",
-              top: 16,
-              right: 16,
-              backgroundColor: "rgba(255,255,255,0.15)",
-              border: "none",
-              color: "#FFFFFF",
-              fontSize: "20px",
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            style={{ position: "absolute", top: 16, right: 16, backgroundColor: "rgba(255,255,255,0.15)", border: "none", color: "#FFFFFF", fontSize: "20px", width: 36, height: 36, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
           >
             ×
           </button>
