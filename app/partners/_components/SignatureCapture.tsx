@@ -144,7 +144,7 @@ export default function SignatureCapture({
             <div style={{ border: "1px solid #D9D9D9", borderRadius: 8, overflow: "hidden", touchAction: "none" }}>
               <SignatureCanvas
                 ref={canvasRef}
-                canvasProps={{ width: 430, height: 200, style: { width: "100%", height: 200, display: "block" } }}
+                canvasProps={{ width: 700, height: 220, style: { width: "100%", height: 180, display: "block", touchAction: "none" } }}
                 backgroundColor="#FFFFFF"
                 penColor="#111111"
               />

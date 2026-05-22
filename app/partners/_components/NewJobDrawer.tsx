@@ -410,7 +410,7 @@ export default function NewJobDrawer({ open, onClose, onCreated, customerName = 
               <Field label="Full Name" required error={errors.fullName}>
                 <input type="text" value={fullName} onChange={e => { setFullName(e.target.value); clearError("fullName"); }} placeholder="Jane Smith" style={{ ...inputStyle, borderColor: errors.fullName ? "#B44A2C" : undefined }} />
               </Field>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div className="fp-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <Field label="Email" required error={errors.email}>
                   <input type="email" value={email} onChange={e => { setEmail(e.target.value); clearError("email"); }} placeholder="jane@example.com" style={{ ...inputStyle, borderColor: errors.email ? "#B44A2C" : undefined }} />
                 </Field>
@@ -422,7 +422,7 @@ export default function NewJobDrawer({ open, onClose, onCreated, customerName = 
                 <input type="text" value={address} onChange={e => { setAddress(e.target.value); clearError("address"); }} placeholder="123 Main St, Toronto, ON M5V 1A1" style={{ ...inputStyle, borderColor: errors.address ? "#B44A2C" : undefined }} />
               </Field>
               {projectType === "builder" && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                <div className="fp-form-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
                   <Field label="Suite #">
                     <input type="text" value={suiteNumber} onChange={e => setSuiteNumber(e.target.value)} placeholder="4B" style={inputStyle} />
                   </Field>
@@ -445,7 +445,7 @@ export default function NewJobDrawer({ open, onClose, onCreated, customerName = 
                 <Field label="Company Name" required error={errors.companyName}>
                   <input type="text" value={companyName} onChange={e => { setCompanyName(e.target.value); clearError("companyName"); }} placeholder="ABC Builders Inc." style={{ ...inputStyle, borderColor: errors.companyName ? "#B44A2C" : undefined }} />
                 </Field>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <div className="fp-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                   <Field label="Site Contact Name">
                     <input type="text" value={siteContactName} onChange={e => setSiteContactName(e.target.value)} placeholder="Mike Jones" style={inputStyle} />
                   </Field>
@@ -498,7 +498,7 @@ export default function NewJobDrawer({ open, onClose, onCreated, customerName = 
           <div>
             <SectionTitle>Schedule</SectionTitle>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div className="fp-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <Field label="Preferred Date" required error={errors.preferredDate}>
                   <input type="date" value={preferredDate} onChange={e => { setPreferredDate(e.target.value); clearError("preferredDate"); }} style={{ ...inputStyle, borderColor: errors.preferredDate ? "#B44A2C" : undefined }} />
                 </Field>

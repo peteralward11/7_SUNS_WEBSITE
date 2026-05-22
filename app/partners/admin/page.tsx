@@ -118,7 +118,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   return (
     <PortalPageShell jobs={miniJobs} userEmail={user?.email ?? ""} userName={portalUser?.name} isAdmin>
-      <div style={{ padding: "36px 40px 40px" }}>
+      <div className="fp-page-header fp-page-content" style={{ padding: "36px 40px 40px" }}>
         <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 6px" }}>
           Admin
         </p>

@@ -63,13 +63,52 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
           transform-origin: bottom;
           animation: fp-bar-grow 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
         }
+        /* ── Mobile ── */
         @media (max-width: 768px) {
           .fp-sidebar { display: none !important; }
           .fp-mobile-topbar { display: flex !important; }
           .fp-main-grid { grid-template-columns: 1fr !important; }
+
+          /* Offset for fixed 52px topbar */
+          .fp-main-content { padding-top: 52px; }
+
+          /* Reduce page padding */
+          .fp-page-header { padding: 16px 16px 10px !important; }
+          .fp-page-content { padding: 0 16px 32px !important; }
+
+          /* Drawers fill full screen */
+          .fp-drawer { width: 100vw !important; }
+
+          /* Table/cards toggle */
+          .fp-table-view { display: none !important; }
+          .fp-cards-view { display: flex !important; flex-direction: column; gap: 10px; }
+
+          /* Toolbar wraps */
+          .fp-toolbar { flex-wrap: wrap !important; }
+
+          /* Prevent iOS input zoom */
+          input[type="text"],
+          input[type="email"],
+          input[type="tel"],
+          input[type="date"],
+          input[type="number"],
+          input[type="search"],
+          select,
+          textarea { font-size: 16px !important; }
+
+          /* Larger touch targets */
+          .fp-touch-target { min-height: 44px !important; }
+
+          /* Form grids stack on mobile */
+          .fp-form-grid-2,
+          .fp-form-grid-3 { grid-template-columns: 1fr !important; }
         }
         @media (min-width: 769px) {
           .fp-mobile-topbar { display: none !important; }
+          .fp-table-view { display: block !important; }
+          .fp-cards-view { display: none !important; }
+          .fp-form-grid-2 { grid-template-columns: 1fr 1fr; }
+          .fp-form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
         }
       `}</style>
       {children}

@@ -127,8 +127,36 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
         />
       </div>
 
-      {/* Table */}
-      <div style={{ border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", backgroundColor: "var(--surface)" }}>
+      {/* Mobile cards */}
+      <div className="fp-cards-view" style={{ display: "none" }}>
+        {filtered.length === 0 ? (
+          <p style={{ fontSize: "13px", color: "var(--text-3)", margin: 0 }}>{search ? "No customers match your search." : "No customers yet."}</p>
+        ) : filtered.map(c => (
+          <div
+            key={c.email}
+            onClick={() => openCustomer(c.email)}
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}
+          >
+            <div style={{ width: 38, height: 38, borderRadius: "50%", backgroundColor: "var(--hover)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: "#E8A33D", flexShrink: 0 }}>
+              {c.full_name[0]?.toUpperCase() ?? "?"}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                <span style={{ fontSize: "15px", fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.full_name}</span>
+                {c.source === "direct" && <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: "#1F6FEB", backgroundColor: "rgba(31,111,235,0.1)", border: "1px solid rgba(31,111,235,0.2)", borderRadius: 4, padding: "1px 5px", flexShrink: 0 }}>Direct</span>}
+              </div>
+              <div style={{ fontSize: "12px", color: "var(--text-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.email}</div>
+            </div>
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              {c.ltv > 0 && <div style={{ fontSize: "13px", fontWeight: 700, color: "#1E7E4A" }}>{fmtCurrency(c.ltv)}</div>}
+              <div style={{ fontSize: "11px", color: "var(--text-3)" }}>{c.job_count} job{c.job_count !== 1 ? "s" : ""}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table (desktop) */}
+      <div className="fp-table-view" style={{ border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden", backgroundColor: "var(--surface)" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--hairline)", backgroundColor: "var(--hover)" }}>

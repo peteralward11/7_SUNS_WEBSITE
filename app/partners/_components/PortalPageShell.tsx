@@ -108,7 +108,7 @@ export default function PortalPageShell({ children, jobs, userEmail, userName, i
       )}
 
       {/* Main content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div className="fp-main-content" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         {children}
       </div>
     </div>

@@ -82,7 +82,7 @@ export default async function CustomersPage() {
 
   return (
     <PortalPageShell jobs={miniJobs} userEmail={user.email ?? ""} userName={portalUser.name} isAdmin={true}>
-      <div style={{ padding: "36px 40px 24px" }}>
+      <div className="fp-page-header" style={{ padding: "36px 40px 24px" }}>
         <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 6px" }}>
           Fisher &amp; Paykel
         </p>
@@ -94,7 +94,7 @@ export default async function CustomersPage() {
         </p>
       </div>
 
-      <div style={{ padding: "0 40px 40px", flex: 1 }}>
+      <div className="fp-page-content" style={{ padding: "0 40px 40px", flex: 1 }}>
         <CustomersTable customers={customers} />
       </div>
 

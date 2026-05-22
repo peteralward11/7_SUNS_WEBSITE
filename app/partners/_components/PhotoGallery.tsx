@@ -51,6 +51,7 @@ export default function PhotoGallery({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -96,33 +97,33 @@ export default function PhotoGallery({
           Photos ({photos.length})
         </p>
         {isAdmin && (
-          <>
-            <button
-              onClick={() => { setError(null); inputRef.current?.click(); }}
-              disabled={uploading}
-              style={{
-                backgroundColor: uploading ? "var(--border)" : "var(--text)",
-                color: uploading ? "var(--text-3)" : "var(--bg)",
-                border: "none",
-                borderRadius: 6,
-                padding: "6px 12px",
-                fontSize: "11px",
-                fontWeight: 600,
-                cursor: uploading ? "default" : "pointer",
-                letterSpacing: "0.04em",
-              }}
-            >
-              {uploading ? "Uploading…" : "+ Add Photos"}
-            </button>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              style={{ display: "none" }}
-              onChange={e => handleFiles(e.target.files)}
-            />
-          </>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            {uploading ? (
+              <span style={{ fontSize: "11px", color: "var(--text-3)", fontWeight: 600 }}>Uploading…</span>
+            ) : (
+              <>
+                <button
+                  onClick={() => { setError(null); inputRef.current?.click(); }}
+                  style={{ backgroundColor: "var(--text)", color: "var(--bg)", border: "none", borderRadius: 6, padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.04em" }}
+                >
+                  + Upload
+                </button>
+                <button
+                  onClick={() => { setError(null); cameraRef.current?.click(); }}
+                  title="Take a photo"
+                  style={{ backgroundColor: "transparent", color: "var(--text-2)", border: "1px solid var(--border)", borderRadius: 6, padding: "5px 10px", fontSize: "11px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                  Camera
+                </button>
+              </>
+            )}
+            <input ref={inputRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={e => handleFiles(e.target.files)} />
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={e => handleFiles(e.target.files)} />
+          </div>
         )}
       </div>
 

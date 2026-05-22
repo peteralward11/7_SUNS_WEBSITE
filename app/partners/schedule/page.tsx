@@ -48,7 +48,7 @@ export default async function SchedulePage() {
 
   return (
     <PortalPageShell jobs={miniJobs} userEmail={user.email ?? ""} userName={portalUser.name} isAdmin>
-      <div style={{ padding: "36px 40px 24px" }}>
+      <div className="fp-page-header" style={{ padding: "36px 40px 24px" }}>
         <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: "0 0 6px" }}>
           Admin
         </p>
@@ -57,7 +57,7 @@ export default async function SchedulePage() {
         </h1>
       </div>
 
-      <div style={{ padding: "0 40px 40px" }}>
+      <div className="fp-page-content" style={{ padding: "0 40px 40px" }}>
         <ScheduleCalendar
           initialTeam={teamRes.data ?? []}
           initialUnscheduled={unscheduledRes.data ?? []}

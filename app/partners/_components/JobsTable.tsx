@@ -91,7 +91,7 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
   return (
     <>
       {/* Toolbar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+      <div className="fp-toolbar" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
         {/* Search */}
         <div style={{ position: "relative", flex: "1 1 220px" }}>
           <svg style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-3)", pointerEvents: "none" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -160,9 +160,40 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
       {/* Kanban */}
       {view === "kanban" && <KanbanBoard jobs={filtered} isAdmin={isAdmin} onJobClick={openJob} />}
 
-      {/* Table */}
+      {/* Mobile cards (table view only) */}
       {view === "table" && (
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
+        <div className="fp-cards-view" style={{ display: "none" }}>
+          {filtered.length === 0 ? (
+            <p style={{ fontSize: "14px", color: "var(--text-3)", margin: 0 }}>No jobs match your search or filters.</p>
+          ) : filtered.map(job => {
+            const meta = getStatusMeta(job.status ?? "pending");
+            return (
+              <div
+                key={job.id}
+                onClick={() => openJob(job.id)}
+                style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderLeft: `4px solid ${meta.color}`, borderRadius: 8, padding: "14px 16px", cursor: "pointer" }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                  <div>
+                    <div style={{ fontSize: "15px", fontWeight: 700, color: "var(--text)" }}>{job.full_name}</div>
+                    {job.fp_order_number && <div style={{ fontSize: "11px", color: "var(--text-3)", marginTop: 1 }}>#{job.fp_order_number}</div>}
+                  </div>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: meta.color, textTransform: "uppercase", letterSpacing: "0.04em", flexShrink: 0, marginLeft: 8 }}>{meta.label}</span>
+                </div>
+                <div style={{ fontSize: "13px", color: "var(--text-2)", marginBottom: 4 }}>{getAppliances(job)}</div>
+                <div style={{ display: "flex", gap: 12, fontSize: "11px", color: "var(--text-3)" }}>
+                  {job.preferred_date && <span>{job.preferred_date}</span>}
+                  <span style={{ textTransform: "capitalize" }}>{job.project_type === "builder" ? "Builder" : "Residential"}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Table (desktop) */}
+      {view === "table" && (
+        <div className="fp-table-view" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
           {filtered.length === 0 ? (
             <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--text-3)" }}>
               <p style={{ fontSize: "14px", margin: 0 }}>No jobs match your search or filters.</p>
