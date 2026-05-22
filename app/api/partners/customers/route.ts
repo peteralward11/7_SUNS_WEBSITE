@@ -105,6 +105,7 @@ export async function POST(req: NextRequest) {
       address,
       notes: notes ?? null,
       preferred_date: preferred_date ?? null,
+      appliances: [],
       source: "direct",
       status: "pending",
       installation: false,

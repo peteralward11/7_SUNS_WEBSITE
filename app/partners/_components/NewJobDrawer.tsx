@@ -192,7 +192,7 @@ export default function NewJobDrawer({ open, onClose, onCreated, customerName = 
     if (!phone.trim())        e.phone = "Phone is required";
     if (!address.trim())      e.address = "Address is required";
     if (!preferredDate)       e.preferredDate = "Preferred date is required";
-    if (appliances.every(a => !a.type)) e.appliances = "At least one appliance is required";
+    if (!appliances.some(a => a.type && a.type.trim())) e.appliances = "At least one appliance is required";
     if (projectType === "builder" && !companyName.trim()) e.companyName = "Company name is required";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -203,9 +203,9 @@ export default function NewJobDrawer({ open, onClose, onCreated, customerName = 
     setSaving(true);
     setApiError(null);
 
-    const applianceList = appliances.map(a =>
-      a.type === "Other" && a.other.trim() ? `Other: ${a.other.trim()}` : a.type
-    );
+    const applianceList = appliances
+      .filter(a => a.type && a.type.trim())
+      .map(a => a.type === "Other" && a.other.trim() ? `Other: ${a.other.trim()}` : a.type);
 
     try {
       const res = await fetch("/api/partners/jobs", {

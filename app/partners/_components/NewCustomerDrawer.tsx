@@ -64,7 +64,7 @@ export default function NewCustomerDrawer({
 }: {
   open: boolean;
   onClose: () => void;
-  onCreated: (email: string) => void;
+  onCreated: (info: { email: string; full_name: string; address: string }) => void;
 }) {
   const [form, setForm] = useState<Form>(empty);
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
@@ -116,7 +116,11 @@ export default function NewCustomerDrawer({
       });
       const data = await res.json();
       if (!res.ok) { setApiError(data.error ?? "Something went wrong"); return; }
-      onCreated(form.email.trim().toLowerCase());
+      onCreated({
+        email: form.email.trim().toLowerCase(),
+        full_name: form.full_name.trim(),
+        address: form.address.trim(),
+      });
     } catch {
       setApiError("Network error — please try again");
     } finally {

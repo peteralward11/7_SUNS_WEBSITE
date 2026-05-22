@@ -26,6 +26,7 @@ function suburb(address: string | null) {
 export default function CustomersTable({ customers: initial }: { customers: Customer[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [customers, setCustomers] = useState<Customer[]>(initial);
   const [search, setSearch] = useState("");
   const [activeEmail, setActiveEmail] = useState<string | null>(searchParams.get("customer"));
   const [newOpen, setNewOpen] = useState(false);
@@ -48,13 +49,20 @@ export default function CustomersTable({ customers: initial }: { customers: Cust
     router.push(`/partners?job=${id}`);
   }
 
-  function handleCreated(email: string) {
+  function handleCreated(info: { email: string; full_name: string; address: string }) {
     setNewOpen(false);
-    router.refresh();
-    openCustomer(email);
+    setCustomers(prev => [{
+      email: info.email,
+      full_name: info.full_name,
+      address: info.address || null,
+      job_count: 1,
+      last_job_date: new Date().toISOString(),
+      source: "direct",
+    }, ...prev]);
+    openCustomer(info.email);
   }
 
-  const filtered = initial.filter(c => {
+  const filtered = customers.filter(c => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
