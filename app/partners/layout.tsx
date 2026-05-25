@@ -67,27 +67,62 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
           transform-origin: bottom;
           animation: fp-bar-grow 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
         }
+        /* Mobile-only elements — hidden by default */
+        .fp-mobile-block { display: none; }
+        .fp-mobile-flex { display: none; }
+        /* Filter chips — hidden by default, shown on mobile */
+        .fp-filter-chips {
+          display: none;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          gap: 8px;
+          padding: 0 0 12px;
+        }
+        .fp-filter-chips::-webkit-scrollbar { display: none; }
+        /* Drawer mobile header — hidden by default */
+        .fp-drawer-header-mobile { display: none; }
         /* ── Mobile ── */
         @media (max-width: 768px) {
           .fp-sidebar { display: none !important; }
           .fp-bottom-nav { display: flex !important; }
+          .fp-no-mobile { display: none !important; }
           .fp-main-grid { grid-template-columns: 1fr !important; }
 
           /* Space below content for fixed bottom nav (64px + safe area) */
           .fp-main-content { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
 
           /* Reduce page padding */
-          .fp-page-header { padding: 16px 16px 10px !important; }
+          .fp-page-header { padding: 20px 16px 12px !important; }
           .fp-page-content { padding: 0 16px 32px !important; }
+
+          /* Mobile-only elements */
+          .fp-mobile-block { display: block !important; }
+          .fp-mobile-flex { display: flex !important; }
+          /* Filter chips */
+          .fp-filter-chips { display: flex !important; }
 
           /* Drawers become full-screen bottom sheets on mobile */
           .fp-drawer {
             width: 100vw !important;
             height: 100dvh !important;
             top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
             border-radius: 0 !important;
             animation: fp-slide-up 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
           }
+
+          /* Mobile drawer header shown, desktop header hidden */
+          .fp-drawer-header-mobile {
+            display: flex !important;
+            align-items: center;
+            gap: 0;
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--hairline);
+            background-color: var(--surface);
+          }
+          .fp-drawer-header-desktop { display: none !important; }
 
           /* Drag handle on mobile drawers */
           .fp-drag-handle { display: block !important; }
@@ -99,8 +134,9 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
           .fp-table-view { display: none !important; }
           .fp-cards-view { display: flex !important; flex-direction: column; gap: 10px; }
 
-          /* Toolbar wraps */
+          /* Toolbar simplified on mobile */
           .fp-toolbar { flex-wrap: wrap !important; }
+          .fp-toolbar-count { display: none !important; }
 
           /* Prevent iOS input zoom */
           input[type="text"],
@@ -123,6 +159,8 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
           .fp-bottom-nav { display: none !important; }
           .fp-table-view { display: block !important; }
           .fp-cards-view { display: none !important; }
+          .fp-drawer-header-mobile { display: none !important; }
+          .fp-drawer-header-desktop { display: flex !important; }
           .fp-form-grid-2 { grid-template-columns: 1fr 1fr; }
           .fp-form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
         }

@@ -13,6 +13,7 @@ function NavItem({ href, icon, label, active, badge }: { href: string; icon: Rea
       color: active ? "#E8A33D" : "#5A5A5A",
       position: "relative", padding: "8px 0",
       WebkitTapHighlightColor: "transparent",
+      borderTop: active ? "2px solid #E8A33D" : "2px solid transparent",
     }}>
       {icon}
       <span style={{ fontSize: "10px", fontWeight: active ? 700 : 400, letterSpacing: "0.01em" }}>{label}</span>

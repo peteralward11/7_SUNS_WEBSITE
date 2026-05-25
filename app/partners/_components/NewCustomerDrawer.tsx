@@ -144,11 +144,26 @@ export default function NewCustomerDrawer({
         flexDirection: "column",
         animation: "fp-slide-in 220ms cubic-bezier(0.16,1,0.3,1)",
       }}>
-        {/* Header */}
-        <div style={{
+        {/* Drag handle — mobile only */}
+        <div className="fp-drag-handle" style={{ display: "none", width: 40, height: 5, borderRadius: 3, backgroundColor: "var(--border)", margin: "14px auto 0", flexShrink: 0 }} />
+
+        {/* Mobile header */}
+        <div className="fp-drawer-header-mobile" style={{ padding: "6px 16px 10px 4px" }}>
+          <button onClick={onClose} style={{ width: 48, height: 48, borderRadius: 10, background: "none", border: "none", cursor: "pointer", color: "var(--text-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+          <div style={{ flex: 1, minWidth: 0, paddingLeft: 4 }}>
+            <p style={{ fontSize: "10px", color: "var(--text-3)", margin: 0, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>Customer Panel</p>
+            <p style={{ fontSize: "16px", fontWeight: 700, margin: 0, color: "var(--text)" }}>New Customer</p>
+          </div>
+        </div>
+
+        {/* Desktop header */}
+        <div className="fp-drawer-header-desktop" style={{
           padding: "20px 24px",
           borderBottom: "1px solid var(--hairline)",
-          display: "flex",
           alignItems: "flex-start",
           justifyContent: "space-between",
           position: "sticky", top: 0,

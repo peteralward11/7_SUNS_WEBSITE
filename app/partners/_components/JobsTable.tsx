@@ -88,8 +88,40 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
     setSelectedIds(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
   }
 
+  const statusChips = ["all", "pending", "confirmed", "scheduled", "completed"] as const;
+  const activeStatusChip = filters.statuses.length === 0 ? "all" : filters.statuses.length === 1 ? filters.statuses[0] : "all";
+
+  function setStatusChip(s: string) {
+    if (s === "all") setFilters(f => ({ ...f, statuses: [] }));
+    else setFilters(f => ({ ...f, statuses: [s] }));
+  }
+
   return (
     <>
+      {/* Mobile filter chips */}
+      <div className="fp-filter-chips">
+        {statusChips.map(s => {
+          const isActive = s === activeStatusChip;
+          return (
+            <button
+              key={s}
+              onClick={() => setStatusChip(s)}
+              style={{
+                flexShrink: 0, padding: "8px 18px", borderRadius: 99,
+                border: `1.5px solid ${isActive ? "#E8A33D" : "var(--border)"}`,
+                fontSize: "13px", fontWeight: isActive ? 700 : 500,
+                cursor: "pointer", whiteSpace: "nowrap",
+                backgroundColor: isActive ? "#E8A33D" : "transparent",
+                color: isActive ? "#111111" : "var(--text-2)",
+                transition: "all 150ms ease",
+              }}
+            >
+              {s === "all" ? "All Jobs" : s.charAt(0).toUpperCase() + s.slice(1)}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Toolbar */}
       <div className="fp-toolbar" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
         {/* Search */}
@@ -102,18 +134,20 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
             onChange={e => setSearch(e.target.value)}
             placeholder="Search jobs…"
             style={{
-              width: "100%", padding: "8px 10px 8px 32px",
-              border: "1px solid var(--border)", borderRadius: 6,
+              width: "100%", padding: "9px 10px 9px 32px",
+              border: "1px solid var(--border)", borderRadius: 8,
               fontSize: "13px", backgroundColor: "var(--input-bg)",
               color: "var(--text)", fontFamily: "inherit", outline: "none",
             }}
           />
         </div>
 
-        <FilterPanel filters={filters} onChange={setFilters} />
+        <div className="fp-no-mobile" style={{ display: "contents" }}>
+          <FilterPanel filters={filters} onChange={setFilters} />
+        </div>
 
-        {/* View toggle */}
-        <div style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 6, overflow: "hidden" }}>
+        {/* View toggle — desktop only */}
+        <div className="fp-no-mobile" style={{ display: "flex", border: "1px solid var(--border)", borderRadius: 6, overflow: "hidden", flexShrink: 0 }}>
           {(["table", "kanban"] as const).map(v => (
             <button key={v} onClick={() => setView(v)} title={v.charAt(0).toUpperCase() + v.slice(1)} style={{
               padding: "7px 12px", border: "none",
@@ -134,12 +168,13 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
           ))}
         </div>
 
-        <span style={{ fontSize: "12px", color: "var(--text-3)", whiteSpace: "nowrap" }}>
+        <span className="fp-toolbar-count" style={{ fontSize: "12px", color: "var(--text-3)", whiteSpace: "nowrap" }}>
           {filtered.length} job{filtered.length !== 1 ? "s" : ""}
         </span>
 
         {isAdmin && (
           <button
+            className="fp-no-mobile"
             onClick={() => setNewJobOpen(true)}
             style={{
               display: "flex", alignItems: "center", gap: 6,
@@ -157,39 +192,71 @@ export default function JobsTable({ jobs: initialJobs, isAdmin }: { jobs: Job[];
         )}
       </div>
 
-      {/* Kanban */}
-      {view === "kanban" && <KanbanBoard jobs={filtered} isAdmin={isAdmin} onJobClick={openJob} />}
+      {/* Kanban — desktop only */}
+      <div className="fp-no-mobile" style={{ display: "contents" }}>
+        {view === "kanban" && <KanbanBoard jobs={filtered} isAdmin={isAdmin} onJobClick={openJob} />}
+      </div>
 
-      {/* Mobile cards (table view only) */}
-      {view === "table" && (
-        <div className="fp-cards-view" style={{ display: "none" }}>
-          {filtered.length === 0 ? (
-            <p style={{ fontSize: "14px", color: "var(--text-3)", margin: 0 }}>No jobs match your search or filters.</p>
-          ) : filtered.map(job => {
-            const meta = getStatusMeta(job.status ?? "pending");
-            return (
-              <div
-                key={job.id}
-                onClick={() => openJob(job.id)}
-                style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderLeft: `4px solid ${meta.color}`, borderRadius: 8, padding: "14px 16px", cursor: "pointer" }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-                  <div>
-                    <div style={{ fontSize: "15px", fontWeight: 700, color: "var(--text)" }}>{job.full_name}</div>
-                    {job.fp_order_number && <div style={{ fontSize: "11px", color: "var(--text-3)", marginTop: 1 }}>#{job.fp_order_number}</div>}
-                  </div>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: meta.color, textTransform: "uppercase", letterSpacing: "0.04em", flexShrink: 0, marginLeft: 8 }}>{meta.label}</span>
-                </div>
-                <div style={{ fontSize: "13px", color: "var(--text-2)", marginBottom: 4 }}>{getAppliances(job)}</div>
-                <div style={{ display: "flex", gap: 12, fontSize: "11px", color: "var(--text-3)" }}>
-                  {job.preferred_date && <span>{job.preferred_date}</span>}
-                  <span style={{ textTransform: "capitalize" }}>{job.project_type === "builder" ? "Builder" : "Residential"}</span>
-                </div>
+      {/* Mobile cards — always rendered, CSS shows/hides */}
+      <div className="fp-cards-view" style={{ display: "none" }}>
+        {filtered.length === 0 ? (
+          <p style={{ fontSize: "14px", color: "var(--text-3)", margin: "24px 0 0", textAlign: "center" }}>No jobs match your filters.</p>
+        ) : filtered.map(job => {
+          const meta = getStatusMeta(job.status ?? "pending");
+          const appliances = getAppliances(job);
+          const dateStr = job.preferred_date
+            ? new Date(job.preferred_date + "T12:00:00").toLocaleDateString("en-CA", { month: "short", day: "numeric" })
+            : null;
+          return (
+            <div
+              key={job.id}
+              onClick={() => openJob(job.id)}
+              style={{
+                backgroundColor: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderLeft: `4px solid ${meta.color}`,
+                borderRadius: 12,
+                padding: "15px 16px",
+                cursor: "pointer",
+                WebkitTapHighlightColor: "transparent",
+                display: "flex",
+                flexDirection: "column",
+                gap: 5,
+              }}
+            >
+              {/* Row 1: status badge + date */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+                  backgroundColor: meta.color + "22", color: meta.color,
+                  padding: "3px 8px", borderRadius: 99,
+                }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: meta.color, flexShrink: 0 }} />
+                  {meta.label}
+                </span>
+                {dateStr && <span style={{ fontSize: "11px", color: "var(--text-3)" }}>{dateStr}</span>}
               </div>
-            );
-          })}
-        </div>
-      )}
+              {/* Row 2: customer name */}
+              <div style={{ fontSize: "16px", fontWeight: 700, color: "var(--text)", lineHeight: 1.2 }}>
+                {job.full_name}
+              </div>
+              {/* Row 3: order + appliances */}
+              <div style={{ fontSize: "12px", color: "var(--text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {job.fp_order_number ? `#${job.fp_order_number}` : ""}
+                {job.fp_order_number && appliances ? "  ·  " : ""}
+                {appliances}
+              </div>
+              {/* Row 4: address */}
+              {job.address && (
+                <div style={{ fontSize: "12px", color: "var(--text-3)", lineHeight: 1.4 }}>
+                  {job.address}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
       {/* Table (desktop) */}
       {view === "table" && (

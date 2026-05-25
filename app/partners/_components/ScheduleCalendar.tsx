@@ -74,6 +74,7 @@ export default function ScheduleCalendar({
   today: string;
 }) {
   const [view, setView] = useState<CalView>("week");
+  const [mobileUnscheduledOpen, setMobileUnscheduledOpen] = useState(false);
   const [activeDate, setActiveDate] = useState(new Date(today + "T12:00:00"));
   const [team, setTeam] = useState<TeamMember[]>(initialTeam);
   const [unscheduled, setUnscheduled] = useState<UnscheduledJob[]>(initialUnscheduled);
@@ -85,6 +86,13 @@ export default function ScheduleCalendar({
   const [schedWindow, setSchedWindow] = useState<TimeWindow>("Morning");
   const [saving, setSaving] = useState(false);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+
+  /* ── Force day view on mobile ── */
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 769) {
+      setView("day");
+    }
+  }, []);
 
   /* ── Date range for fetch ───── */
   function rangeForView(): { start: string; end: string } {
@@ -176,11 +184,11 @@ export default function ScheduleCalendar({
       {/* ── Top bar ─────────────── */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         <button onClick={() => navigate(-1)} style={navBtn}>←</button>
-        <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--text)", minWidth: 220, textAlign: "center" }}>{navLabel}</span>
+        <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--text)", flex: 1, textAlign: "center" }}>{navLabel}</span>
         <button onClick={() => navigate(1)} style={navBtn}>→</button>
         <button onClick={() => setActiveDate(new Date(today + "T12:00:00"))} style={{ ...navBtn, fontSize: "11px" }}>Today</button>
 
-        <div style={{ marginLeft: "auto", display: "flex", gap: 6, alignItems: "center" }}>
+        <div className="fp-no-mobile" style={{ marginLeft: "auto", display: "flex", gap: 6, alignItems: "center" }}>
           {(["day", "week", "month"] as CalView[]).map(v => (
             <button key={v} onClick={() => setView(v)} style={{
               padding: "5px 12px", borderRadius: 6, fontSize: "12px", fontWeight: 600,
@@ -195,7 +203,25 @@ export default function ScheduleCalendar({
             color: "var(--text-2)", cursor: "pointer", marginLeft: 4,
           }}>Manage Team</button>
         </div>
+
       </div>
+
+      {/* Mobile unscheduled jobs bar */}
+      {unscheduled.length > 0 && (
+        <button
+          className="fp-mobile-block"
+          onClick={() => setMobileUnscheduledOpen(true)}
+          style={{
+            width: "100%", padding: "12px 16px", marginBottom: 12,
+            backgroundColor: "#E8A33D18", border: "1.5px solid #E8A33D55",
+            borderRadius: 10, cursor: "pointer", textAlign: "left",
+            color: "#E8A33D", fontSize: "13px", fontWeight: 700,
+            fontFamily: "inherit",
+          }}
+        >
+          {unscheduled.length} Unscheduled Job{unscheduled.length !== 1 ? "s" : ""} — tap to assign
+        </button>
+      )}
 
       {/* ── Schedule window popover ── */}
       {scheduling && (
@@ -234,6 +260,29 @@ export default function ScheduleCalendar({
       {view === "day" && <DayView activeDate={activeDate} team={team} assignments={assignments} unscheduled={unscheduled} loading={loadingCal} dragOverKey={dragOverKey} onDragStart={onDragStart} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop} onJobClick={setOpenJobId} onRemove={removeAssignment} />}
       {view === "week" && <WeekView activeDate={activeDate} team={team} assignments={assignments} unscheduled={unscheduled} loading={loadingCal} dragOverKey={dragOverKey} onDragStart={onDragStart} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop} onJobClick={setOpenJobId} onRemove={removeAssignment} onDayClick={d => { setActiveDate(d); setView("day"); }} />}
       {view === "month" && <MonthView activeDate={activeDate} assignments={assignments} loading={loadingCal} onJobClick={setOpenJobId} onDayClick={d => { setActiveDate(d); setView("day"); }} />}
+
+      {/* ── Mobile unscheduled sheet ── */}
+      {mobileUnscheduledOpen && (
+        <>
+          <div onClick={() => setMobileUnscheduledOpen(false)} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 200, animation: "fp-fade-in 200ms ease" }} />
+          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, backgroundColor: "var(--surface)", borderRadius: "20px 20px 0 0", border: "1px solid var(--border)", zIndex: 201, animation: "fp-slide-up 260ms cubic-bezier(0.16, 1, 0.3, 1)", maxHeight: "75vh", display: "flex", flexDirection: "column", paddingBottom: "env(safe-area-inset-bottom, 16px)" }}>
+            <div style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: "var(--border)", margin: "14px auto 0" }} />
+            <div style={{ padding: "12px 20px 8px", borderBottom: "1px solid var(--hairline)", flexShrink: 0 }}>
+              <p style={{ fontSize: "13px", fontWeight: 700, color: "var(--text)", margin: 0 }}>Unscheduled Jobs ({unscheduled.length})</p>
+              <p style={{ fontSize: "11px", color: "var(--text-3)", margin: "2px 0 0" }}>Use the calendar above to assign these jobs</p>
+            </div>
+            <div style={{ overflowY: "auto", padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+              {unscheduled.map(job => (
+                <div key={job.id} style={{ padding: "12px 14px", backgroundColor: "var(--hover)", border: "1px solid var(--border)", borderRadius: 10 }}>
+                  <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)", margin: "0 0 2px" }}>{job.full_name}</p>
+                  <p style={{ fontSize: "12px", color: "var(--text-2)", margin: "0 0 2px" }}>{job.fp_order_number ? `#${job.fp_order_number}` : ""}{job.fp_order_number && job.address ? " · " : ""}{job.address ?? ""}</p>
+                  {job.preferred_date && <p style={{ fontSize: "11px", color: "#1F6FEB", margin: 0 }}>Preferred: {new Date(job.preferred_date + "T12:00:00").toLocaleDateString("en-CA", { month: "short", day: "numeric" })}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Modals ─────────────────── */}
       <TeamManageModal open={teamOpen} onClose={() => setTeamOpen(false)} team={team} colorPresets={COLOR_PRESETS} onTeamChange={setTeam} />
@@ -331,7 +380,9 @@ function DayView({ activeDate, team, assignments, unscheduled, loading, dragOver
   if (team.length === 0) {
     return (
       <div style={{ display: "flex", gap: 12 }}>
-        <UnscheduledQueue jobs={unscheduled} onDragStart={onDragStart} />
+        <div className="fp-no-mobile" style={{ display: "contents" }}>
+          <UnscheduledQueue jobs={unscheduled} onDragStart={onDragStart} />
+        </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300, backgroundColor: "var(--hover)", borderRadius: 10, border: "1px dashed var(--border)" }}>
           <p style={{ fontSize: "13px", color: "var(--text-3)" }}>Add team members to start scheduling</p>
         </div>
@@ -341,7 +392,9 @@ function DayView({ activeDate, team, assignments, unscheduled, loading, dragOver
 
   return (
     <div style={{ display: "flex", gap: 12 }}>
-      <UnscheduledQueue jobs={unscheduled} onDragStart={onDragStart} />
+      <div className="fp-no-mobile" style={{ display: "contents" }}>
+        <UnscheduledQueue jobs={unscheduled} onDragStart={onDragStart} />
+      </div>
       <div style={{ flex: 1, overflowX: "auto" }}>
         {loading && <p style={{ fontSize: "12px", color: "var(--text-3)", margin: "0 0 8px" }}>Loading…</p>}
         <div style={{ display: "grid", gridTemplateColumns: `56px repeat(${team.length}, 1fr)`, minWidth: team.length * 140 + 56 }}>

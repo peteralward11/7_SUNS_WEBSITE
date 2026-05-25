@@ -76,7 +76,7 @@ export default function MySchedule({ assignments, teamMemberColor }: { assignmen
           <div key={date}>
             {/* Date header */}
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-              <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-2)", textTransform: "uppercase", margin: 0 }}>
+              <p style={{ fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.08em", color: "#E8A33D", textTransform: "uppercase", margin: 0 }}>
                 {fmtDate(date)}
               </p>
               <div style={{ flex: 1, height: 1, backgroundColor: "var(--hairline)" }} />
@@ -110,8 +110,8 @@ export default function MySchedule({ assignments, teamMemberColor }: { assignmen
                     onMouseEnter={e => (e.currentTarget.style.backgroundColor = "var(--hover)")}
                     onMouseLeave={e => (e.currentTarget.style.backgroundColor = "var(--surface)")}
                   >
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3, flexWrap: "wrap" }}>
                         <span style={{ fontSize: "15px", fontWeight: 700, color: "var(--text)" }}>
                           {booking.full_name}
                         </span>
@@ -119,8 +119,20 @@ export default function MySchedule({ assignments, teamMemberColor }: { assignmen
                           <span style={{ fontSize: "11px", color: "var(--text-3)" }}>#{booking.fp_order_number}</span>
                         )}
                       </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3, flexWrap: "wrap" }}>
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                          fontSize: "10px", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase",
+                          backgroundColor: meta.color + "22", color: meta.color,
+                          padding: "2px 7px", borderRadius: 99,
+                        }}>
+                          <span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: meta.color, flexShrink: 0 }} />
+                          {meta.label}
+                        </span>
+                        <span style={{ fontSize: "11px", color: "var(--text-3)" }}>{timeWindow}</span>
+                      </div>
                       {booking.address && (
-                        <p style={{ fontSize: "13px", color: "var(--text-2)", margin: "0 0 4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <p style={{ fontSize: "12px", color: "var(--text-2)", margin: "0 0 2px", lineHeight: 1.4 }}>
                           {booking.address}
                         </p>
                       )}
@@ -128,16 +140,8 @@ export default function MySchedule({ assignments, teamMemberColor }: { assignmen
                         {getAppliances(booking.appliances)}
                       </p>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
-                      <span style={{
-                        fontSize: "11px", fontWeight: 700, color: meta.color,
-                        letterSpacing: "0.04em", textTransform: "uppercase",
-                        display: "flex", alignItems: "center", gap: 4,
-                      }}>
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: meta.color, flexShrink: 0 }} />
-                        {meta.label}
-                      </span>
-                      <span style={{ fontSize: "12px", color: "var(--text-3)", whiteSpace: "nowrap" }}>{timeWindow}</span>
+                    <div style={{ flexShrink: 0, paddingLeft: 8 }}>
+                      <span style={{ fontSize: "18px", color: "var(--border)", lineHeight: 1 }}>›</span>
                     </div>
                   </div>
                 );
